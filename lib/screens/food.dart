@@ -27,60 +27,60 @@ class _FoodState extends State<Food> {
   int selectedIndex = 0;
   TodayMealStatModel todayMealStatModel;
 
-  // List<dynamic> list = [];
+  List<dynamic> list1 = [];
   List<List<Map<String, Object>>> list = [
-    [
-      {
-        "id": 41,
-        "name": "tomato",
-        "image": "1.jpeg",
-        "category_id": 1,
-        "eatinghabit": "1",
-        "score": 10,
-        "created_at": "2021-08-01T17:51:06.000000Z",
-        "updated_at": "2021-08-01T17:51:06.000000Z",
-        "category": {
-          "id": 1,
-          "name": "Fruits",
-          "created_at": "2021-06-10T03:06:20.000000Z",
-          "updated_at": "2021-06-10T03:06:20.000000Z"
-        }
-      },
-    ],
-    [
-      {
-        "id": 41,
-        "name": "tomato",
-        "image": "1.jpeg",
-        "category_id": 1,
-        "eatinghabit": "1",
-        "score": 10,
-        "created_at": "2021-08-01T17:51:06.000000Z",
-        "updated_at": "2021-08-01T17:51:06.000000Z",
-        "category": {
-          "id": 1,
-          "name": "Fruits",
-          "created_at": "2021-06-10T03:06:20.000000Z",
-          "updated_at": "2021-06-10T03:06:20.000000Z"
-        }
-      },
-      {
-        "id": 42,
-        "name": "potato",
-        "image": "2.jpeg",
-        "category_id": 3,
-        "eatinghabit": "2",
-        "score": 11,
-        "created_at": "2021-08-01T17:51:06.000000Z",
-        "updated_at": "2021-08-01T17:51:06.000000Z",
-        "category": {
-          "id": 3,
-          "name": "Meat",
-          "created_at": "2021-06-10T03:06:31.000000Z",
-          "updated_at": "2021-06-10T03:06:31.000000Z"
-        }
-      },
-    ],
+    // [
+    //   {
+    //     "id": 41,
+    //     "name": "tomato",
+    //     "image": "1.jpeg",
+    //     "category_id": 1,
+    //     "eatinghabit": "1",
+    //     "score": 10,
+    //     "created_at": "2021-08-01T17:51:06.000000Z",
+    //     "updated_at": "2021-08-01T17:51:06.000000Z",
+    //     "category": {
+    //       "id": 1,
+    //       "name": "Fruits",
+    //       "created_at": "2021-06-10T03:06:20.000000Z",
+    //       "updated_at": "2021-06-10T03:06:20.000000Z"
+    //     }
+    //   },
+    // ],
+    // [
+    //   {
+    //     "id": 41,
+    //     "name": "tomato",
+    //     "image": "1.jpeg",
+    //     "category_id": 1,
+    //     "eatinghabit": "1",
+    //     "score": 10,
+    //     "created_at": "2021-08-01T17:51:06.000000Z",
+    //     "updated_at": "2021-08-01T17:51:06.000000Z",
+    //     "category": {
+    //       "id": 1,
+    //       "name": "Fruits",
+    //       "created_at": "2021-06-10T03:06:20.000000Z",
+    //       "updated_at": "2021-06-10T03:06:20.000000Z"
+    //     }
+    //   },
+    //   {
+    //     "id": 42,
+    //     "name": "potato",
+    //     "image": "2.jpeg",
+    //     "category_id": 3,
+    //     "eatinghabit": "2",
+    //     "score": 11,
+    //     "created_at": "2021-08-01T17:51:06.000000Z",
+    //     "updated_at": "2021-08-01T17:51:06.000000Z",
+    //     "category": {
+    //       "id": 3,
+    //       "name": "Meat",
+    //       "created_at": "2021-06-10T03:06:31.000000Z",
+    //       "updated_at": "2021-06-10T03:06:31.000000Z"
+    //     }
+    //   },
+    // ],
   ];
   Map<String, double> dataMap = {
     "Meats": 5,
@@ -94,7 +94,7 @@ class _FoodState extends State<Food> {
   final Map<String, dynamic> formData = {
     "start_date": "2021-04-26",
     "end_date": "2021-09-26",
-    "user_id": 1
+    "user_id": 17
   };
 
   Future<Map<String, dynamic>> fetchMeals() async {
@@ -103,10 +103,8 @@ class _FoodState extends State<Food> {
       headers: {"content-type": "application/json"},
       body: json.encode(formData),
     );
-    print(
-        'dataaaaaaaaaaaaaaaaa: ${json.decode(result.body)['data']['list']['7']}');
-    print(json.decode(result.body)['data']['list'].runtimeType);
-    // list = json.decode(result.body)['data']['list']['7'];
+    print(json.decode(result.body)['data']['data']);
+    list1 = json.decode(result.body)['data']['data'];
     // setState(() {
     //   list = json.decode(result.body)["data"]["list"];
     // });

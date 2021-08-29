@@ -346,15 +346,8 @@ class _HomeState extends State<Home> {
                           child: Column(
                             children: [
                               Text('Welcome Back,'),
-                              Text(name ?? '',
-                                  style: TextStyle(
-                                      fontSize: 36,
-                                      fontWeight: FontWeight.w700)),
                             ],
                           ),
-                        ),
-                        Flexible(
-                          child: Image.asset('assets/images/dummy.png'),
                         ),
                       ],
                     ),

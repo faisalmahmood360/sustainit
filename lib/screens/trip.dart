@@ -186,7 +186,7 @@ class _TripState extends State<Trip> {
                 child: ListView(
                   children: <Widget>[
                     Container(
-                      height: 400,
+                      // height: 400,
                       child: FutureBuilder<List<dynamic>>(
                         future: fetchUsers(),
                         builder:
@@ -201,8 +201,8 @@ class _TripState extends State<Trip> {
                                     children: [
                                       Container(
                                         alignment: Alignment.bottomLeft,
-                                        child: Text(
-                                            snapshot.data[index]['trip_type']),
+                                        child: Text(toBeginningOfSentenceCase(
+                                            snapshot.data[index]['trip_type'])),
                                       ),
                                       InkWell(
                                         onTap: () {

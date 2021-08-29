@@ -187,6 +187,7 @@ class _AddTripState extends State<AddTrip> {
                               child: Container(
                                 padding: EdgeInsets.only(top: 10),
                                 child: TextFormField(
+                                  keyboardType: TextInputType.number,
                                   onSaved: (value) => _tripDistance = value,
                                   decoration: InputDecoration(
                                     filled: true,
