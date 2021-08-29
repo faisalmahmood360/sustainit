@@ -184,9 +184,10 @@ class _TripState extends State<Trip> {
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: ListView(
+                  shrinkWrap: true,
                   children: <Widget>[
                     Container(
-                      // height: 400,
+                      height: 400,
                       child: FutureBuilder<List<dynamic>>(
                         future: fetchUsers(),
                         builder:

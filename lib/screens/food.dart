@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:foodapp/ApiManager/ApiManager.dart';
 import 'package:foodapp/models/ApiModels/todayMealStatModel.dart';
+import 'package:foodapp/screens/edit_food.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:another_flushbar/flushbar.dart';
@@ -15,6 +17,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:date_range_picker/date_range_picker.dart' as DateRangePicker;
 
+var storage = FlutterSecureStorage();
+
 class Food extends StatefulWidget {
   @override
   _FoodState createState() => _FoodState();
@@ -27,61 +31,8 @@ class _FoodState extends State<Food> {
   int selectedIndex = 0;
   TodayMealStatModel todayMealStatModel;
 
-  List<dynamic> list1 = [];
-  List<List<Map<String, Object>>> list = [
-    // [
-    //   {
-    //     "id": 41,
-    //     "name": "tomato",
-    //     "image": "1.jpeg",
-    //     "category_id": 1,
-    //     "eatinghabit": "1",
-    //     "score": 10,
-    //     "created_at": "2021-08-01T17:51:06.000000Z",
-    //     "updated_at": "2021-08-01T17:51:06.000000Z",
-    //     "category": {
-    //       "id": 1,
-    //       "name": "Fruits",
-    //       "created_at": "2021-06-10T03:06:20.000000Z",
-    //       "updated_at": "2021-06-10T03:06:20.000000Z"
-    //     }
-    //   },
-    // ],
-    // [
-    //   {
-    //     "id": 41,
-    //     "name": "tomato",
-    //     "image": "1.jpeg",
-    //     "category_id": 1,
-    //     "eatinghabit": "1",
-    //     "score": 10,
-    //     "created_at": "2021-08-01T17:51:06.000000Z",
-    //     "updated_at": "2021-08-01T17:51:06.000000Z",
-    //     "category": {
-    //       "id": 1,
-    //       "name": "Fruits",
-    //       "created_at": "2021-06-10T03:06:20.000000Z",
-    //       "updated_at": "2021-06-10T03:06:20.000000Z"
-    //     }
-    //   },
-    //   {
-    //     "id": 42,
-    //     "name": "potato",
-    //     "image": "2.jpeg",
-    //     "category_id": 3,
-    //     "eatinghabit": "2",
-    //     "score": 11,
-    //     "created_at": "2021-08-01T17:51:06.000000Z",
-    //     "updated_at": "2021-08-01T17:51:06.000000Z",
-    //     "category": {
-    //       "id": 3,
-    //       "name": "Meat",
-    //       "created_at": "2021-06-10T03:06:31.000000Z",
-    //       "updated_at": "2021-06-10T03:06:31.000000Z"
-    //     }
-    //   },
-    // ],
-  ];
+  List<dynamic> list = [];
+  List<int> selectedItems = [];
   Map<String, double> dataMap = {
     "Meats": 5,
     "Fruits": 3,
@@ -91,28 +42,30 @@ class _FoodState extends State<Food> {
 
   final String apiUrl =
       "http://sustianitnew.planlabsolutions.org/api/food/get_user_meal";
-  final Map<String, dynamic> formData = {
-    "start_date": "2021-04-26",
-    "end_date": "2021-09-26",
-    "user_id": 17
-  };
 
   Future<Map<String, dynamic>> fetchMeals() async {
+    var id = await storage.read(key: 'loginId');
+    final Map<String, dynamic> formData = {
+      "start_date": DateFormat('yyyy-MM-dd').format(_startDate).toString(),
+      "end_date": DateFormat('yyyy-MM-dd').format(_endDate).toString(),
+      "user_id": id
+    };
+
     var result = await http.post(
       apiUrl,
       headers: {"content-type": "application/json"},
       body: json.encode(formData),
     );
-    print(json.decode(result.body)['data']['data']);
-    list1 = json.decode(result.body)['data']['data'];
-    // setState(() {
-    //   list = json.decode(result.body)["data"]["list"];
-    // });
+    setState(() {
+      list = json.decode(result.body)['data']['data'];
+    });
+    return json.decode(result.body)['data']['data'];
   }
 
   void initState() {
     super.initState();
     fetchMeals();
+    todaytripStatApiSubmit();
     EasyLoading.show(status: 'Loading...');
 
     Future.delayed(const Duration(seconds: 1), () {
@@ -122,7 +75,16 @@ class _FoodState extends State<Food> {
 
   @override
   Widget build(BuildContext context) {
-    print('listtttttt: ${list}');
+    var editFood = (items) => {
+          for (int i = 0; i < items.length; i++)
+            {
+              setState(() {
+                selectedItems.add(items[i]['id']);
+              })
+            },
+          print('items: ${selectedItems}')
+        };
+
     return SafeArea(
         child: Scaffold(
             appBar: AppBar(
@@ -205,6 +167,7 @@ class _FoodState extends State<Food> {
                                               _endDate = picked[1];
                                             });
                                           }
+                                          fetchMeals();
                                         },
                                         child: SvgPicture.asset(
                                             'assets/images/today.svg')),
@@ -239,92 +202,137 @@ class _FoodState extends State<Food> {
                   padding: const EdgeInsets.all(20.0),
                   child: ListView(
                     children: <Widget>[
-                      ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: list.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            print('length: ${list.length}');
-                            print('indexxxxxxx: ${index}');
-                            print('itemmmmmmmmm: ${list[index]}');
-                            print('itemmmmmmmmm length: ${list[index].length}');
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Container(
-                                  alignment: Alignment.bottomLeft,
-                                  child: Text('Meal ${index}'),
-                                ),
-                                Container(
-                                  margin: const EdgeInsets.only(top: 10.0),
-                                  padding: const EdgeInsets.all(10.0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(15.0),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      ListView.builder(
-                                          itemCount: list[index].length,
-                                          physics: ClampingScrollPhysics(),
-                                          shrinkWrap: true,
-                                          itemBuilder: (BuildContext context,
-                                              int index) {
-                                            return Column(
+                      list != null
+                          ? Container(
+                              height: 400,
+                              child: ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: list.length,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                    return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        SizedBox(height: 5.0),
+                                        Container(
+                                          alignment: Alignment.bottomLeft,
+                                          child: Text('Meal ${index + 1}'),
+                                        ),
+                                        Container(
+                                          margin:
+                                              const EdgeInsets.only(top: 10.0),
+                                          padding: const EdgeInsets.all(10.0),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(15.0),
+                                          ),
+                                          child: InkWell(
+                                            onTap: () {
+                                              var items = [];
+                                              for (int i = 0;
+                                                  i < list[index].length;
+                                                  i++) {
+                                                items.add(list[index][i]['id']);
+                                              }
+                                              Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          EditFood(
+                                                            items: items,
+                                                          )));
+                                            },
+                                            child: Column(
                                               children: [
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Row(children: [
-                                                      Image.asset(
-                                                          'assets/images/food/food1.png'),
-                                                      SizedBox(width: 10),
-                                                      Column(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .start,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
+                                                ListView.builder(
+                                                    itemCount:
+                                                        list[index].length,
+                                                    shrinkWrap: true,
+                                                    itemBuilder:
+                                                        (BuildContext context,
+                                                            int ind) {
+                                                      return Column(
                                                         children: [
-                                                          Text('Noodles',
-                                                              style: TextStyle(
-                                                                  fontSize: 18,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w700)),
-                                                          Text('Junk Food')
+                                                          Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .spaceBetween,
+                                                            children: [
+                                                              Row(children: [
+                                                                ClipRRect(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              10.0),
+                                                                  child: Image.network(
+                                                                      'https://sustianitnew.planlabsolutions.org/food_items/${list[index][ind]['image']}',
+                                                                      height:
+                                                                          48,
+                                                                      width:
+                                                                          48),
+                                                                ),
+                                                                SizedBox(
+                                                                    width: 10),
+                                                                Column(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .start,
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    Text(
+                                                                        '${list[index][ind]['name']}',
+                                                                        style: TextStyle(
+                                                                            fontSize:
+                                                                                18,
+                                                                            fontWeight:
+                                                                                FontWeight.w700)),
+                                                                    Text(
+                                                                        '${list[index][ind]['category']['name']}')
+                                                                  ],
+                                                                ),
+                                                              ]),
+                                                              Column(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .start,
+                                                                children: [
+                                                                  Text(
+                                                                      '${list[index][ind]['score']}',
+                                                                      style: TextStyle(
+                                                                          fontSize:
+                                                                              18,
+                                                                          fontWeight:
+                                                                              FontWeight.w700)),
+                                                                  Text('score')
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          SizedBox(
+                                                              height: 10.0),
                                                         ],
-                                                      ),
-                                                    ]),
-                                                    Column(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text('27',
-                                                            style: TextStyle(
-                                                                fontSize: 18,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w700)),
-                                                        Text('score')
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                                SizedBox(height: 10.0),
+                                                      );
+                                                    }),
                                               ],
-                                            );
-                                          }),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            );
-                          }),
-                      SizedBox(height: 20.0),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }),
+                            )
+                          : Container(
+                              height: 200,
+                              child: Align(
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                      'No Data Availabel For Selected Date',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold)))),
                       Container(
                         alignment: Alignment.bottomLeft,
                         child: Text('Total Stats'),
@@ -395,6 +403,7 @@ class _FoodState extends State<Food> {
     if (response.statusCode == 200) {
       todayMealStatModel =
           TodayMealStatModel.fromJson(jsonDecode(response.body));
+      print('statsssssssssss: ${response.body}');
       setState(() {});
     }
   }
