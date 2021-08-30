@@ -457,7 +457,7 @@ class _HomeState extends State<Home> {
                                   ),
                                 ),
                                 Text(
-                                  '${foodTodayScore + foodLastMonthScore}',
+                                  '${foodTodayScore + travelTodayScore}',
                                   style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.w700),
@@ -479,7 +479,7 @@ class _HomeState extends State<Home> {
                                   ),
                                 ),
                                 Text(
-                                  '${travelTodayScore + travelLastMonthScore}',
+                                  '${foodLastMonthScore + travelLastMonthScore}',
                                   style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.w700),

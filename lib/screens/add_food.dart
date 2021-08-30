@@ -103,12 +103,10 @@ class _AddFoodState extends State<AddFood> {
                       padding: EdgeInsets.all(20.0),
                       itemCount: snapshot.data.length,
                       itemBuilder: (BuildContext context, int index) {
-                        print('index ${index}');
                         return Column(
                           children: [
                             GestureDetector(
                               onTap: () {
-                                print('index ${index}');
                                 if (_selectedFoods
                                     .contains(snapshot.data[index]['id'])) {
                                   setState(() {
@@ -193,10 +191,11 @@ class _AddFoodState extends State<AddFood> {
           ),
           Positioned(
               bottom: 40,
-              left: 20,
+              left: 10,
+              right: 10,
               child: SizedBox(
                   height: 50,
-                  width: 350,
+                  width: MediaQuery.of(context).size.width * 0.9,
                   child: RaisedButton(
                       textColor: Colors.white,
                       color: Color(0xff50E569),

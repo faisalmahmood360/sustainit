@@ -11,7 +11,8 @@ var storage = FlutterSecureStorage();
 
 class EditFood extends StatefulWidget {
   List items;
-  EditFood({this.items});
+  int mealId;
+  EditFood({this.items, this.mealId});
   @override
   _EditFoodState createState() => _EditFoodState();
 }
@@ -36,7 +37,7 @@ class _EditFoodState extends State<EditFood> {
   Widget build(BuildContext context) {
     var addFood = () async {
       var id = await storage.read(key: 'loginId');
-      if (_selectedFoods.length <= 0) {
+      if (widget.items.length <= 0) {
         Flushbar(
           title: "Invalid form",
           message: "Please selecte at lest one food item",
@@ -46,9 +47,10 @@ class _EditFoodState extends State<EditFood> {
         EasyLoading.show(status: 'Adding meal...');
 
         final String addMealUrl =
-            "http://sustianitnew.planlabsolutions.org/api/food/add_user_meal";
+            "http://sustianitnew.planlabsolutions.org/api/food/updated_user_meal";
         final Map<String, dynamic> formData = {
-          "food": _selectedFoods,
+          "food": widget.items,
+          "meal_id": widget.mealId,
           "user_id": id
         };
 
@@ -192,10 +194,11 @@ class _EditFoodState extends State<EditFood> {
           ),
           Positioned(
               bottom: 40,
-              left: 20,
+              left: 10,
+              right: 10,
               child: SizedBox(
                   height: 50,
-                  width: 350,
+                  width: MediaQuery.of(context).size.width * 0.9,
                   child: RaisedButton(
                       textColor: Colors.white,
                       color: Color(0xff50E569),

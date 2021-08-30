@@ -30,32 +30,43 @@ class _AddTripState extends State<AddTrip> {
       _vehicleName = "Toyota",
       _fuelType = "1";
   int _userId = 1;
+  List<dynamic> gasoline = [
+    {
+      "id": 4,
+      "name": "Kia",
+      "image": "1625749513.jpg",
+      "fuel_type": "1",
+      "score": 20,
+      "created_at": "2021-07-08T03:05:13.000000Z",
+      "updated_at": "2021-07-08T03:05:13.000000Z"
+    }
+  ];
 
   final String apiUrl =
       "http://sustianitnew.planlabsolutions.org/api/travel/trip_detail";
-  final Map<String, dynamic> formData = {'habbites': '1'};
 
-  Future<List<dynamic>> fetchUsers() async {
+  Future<List<dynamic>> fetchTripData() async {
     var result = await http.get(apiUrl);
     setState(() {
-      _gasolineVehicles = json.decode(result.body)['data'];
+      gasoline = json.decode(result.body)['data']['vehical']['gasoline'];
     });
-    print(json.decode(result.body)['data']);
+    print(
+        'datttttttttaaaaaaaaa: ${json.decode(result.body)['data']['vehical']}');
     return json.decode(result.body)['data'];
   }
 
   void initState() {
     super.initState();
-    fetchUsers();
-    setState(() {
-      _transport_types = _gasolineVehicles;
-    });
+    fetchTripData();
+    // setState(() {
+    //   _transport_types = _gasolineVehicles;
+    // });
   }
 
   @override
   Widget build(BuildContext context) {
     AuthProvider auth = Provider.of<AuthProvider>(context);
-    print('gasoline list: ${_gasolineVehicles}');
+    print('gasoline list: ${gasoline}');
     var addTrip = () async {
       var id = await storage.read(key: 'loginId');
       final form = _formKey.currentState;

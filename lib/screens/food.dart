@@ -62,10 +62,30 @@ class _FoodState extends State<Food> {
     return json.decode(result.body)['data']['data'];
   }
 
+  final String statsApiUrl =
+      "http://sustianitnew.planlabsolutions.org/api/food/get_meal_stats";
+
+  Future<Map<String, dynamic>> fetchMealsStats() async {
+    var id = await storage.read(key: 'loginId');
+    final Map<String, dynamic> formData = {
+      "record_for": "today",
+      "user_id": id
+    };
+
+    var result = await http.post(
+      statsApiUrl,
+      headers: {"content-type": "application/json"},
+      body: json.encode(formData),
+    );
+    setState(() {});
+    print('statssssss: ${json.decode(result.body)['data']['mealPercentage']}');
+    return json.decode(result.body)['data'];
+  }
+
   void initState() {
     super.initState();
     fetchMeals();
-    todaytripStatApiSubmit();
+    fetchMealsStats();
     EasyLoading.show(status: 'Loading...');
 
     Future.delayed(const Duration(seconds: 1), () {
@@ -75,16 +95,6 @@ class _FoodState extends State<Food> {
 
   @override
   Widget build(BuildContext context) {
-    var editFood = (items) => {
-          for (int i = 0; i < items.length; i++)
-            {
-              setState(() {
-                selectedItems.add(items[i]['id']);
-              })
-            },
-          print('items: ${selectedItems}')
-        };
-
     return SafeArea(
         child: Scaffold(
             appBar: AppBar(
@@ -206,7 +216,6 @@ class _FoodState extends State<Food> {
                           ? Container(
                               height: 400,
                               child: ListView.builder(
-                                  shrinkWrap: true,
                                   itemCount: list.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
@@ -241,8 +250,10 @@ class _FoodState extends State<Food> {
                                                   MaterialPageRoute(
                                                       builder: (context) =>
                                                           EditFood(
-                                                            items: items,
-                                                          )));
+                                                              items: items,
+                                                              mealId: list[
+                                                                      index][0][
+                                                                  'meal_id'])));
                                             },
                                             child: Column(
                                               children: [
