@@ -19,6 +19,31 @@ import 'package:date_range_picker/date_range_picker.dart' as DateRangePicker;
 
 var storage = FlutterSecureStorage();
 
+class FoodStats {
+  String fruits;
+  String vegetable;
+  String meat;
+  String nuts;
+  String bakkery;
+
+  FoodStats({this.fruits, this.vegetable, this.meat, this.nuts, this.bakkery});
+
+  factory FoodStats.fromJson(Map<String, dynamic> json) => FoodStats(
+      fruits: json['Fruits'],
+      vegetable: json['Vegetable'],
+      meat: json['Meat'],
+      nuts: json['nuts'],
+      bakkery: json['Bakkery']);
+
+  Map<String, dynamic> toJson() => {
+        "fruits": fruits,
+        "vegetable": vegetable,
+        "meat": meat,
+        "nuts": nuts,
+        "bakkery": bakkery
+      };
+}
+
 class Food extends StatefulWidget {
   @override
   _FoodState createState() => _FoodState();
@@ -30,14 +55,15 @@ class _FoodState extends State<Food> {
   DateTime _endDate = DateTime.now();
   int selectedIndex = 0;
   TodayMealStatModel todayMealStatModel;
+  FoodStats foodStats;
 
   List<dynamic> list = [];
   List<int> selectedItems = [];
+  Map<String, dynamic> stats = {"Fruits": 30, "Vegetable": 20};
   Map<String, double> dataMap = {
-    "Meats": 5,
-    "Fruits": 3,
-    "Vegetables": 2,
-    "Bakery": 2,
+    "Fruits": 42.8599999999999994315658113919198513031005859375,
+    "Vegetable": 28.57000000000000028421709430404007434844970703125,
+    "Meat": 28.57000000000000028421709430404007434844970703125
   };
 
   final String apiUrl =
@@ -62,30 +88,10 @@ class _FoodState extends State<Food> {
     return json.decode(result.body)['data']['data'];
   }
 
-  final String statsApiUrl =
-      "http://sustianitnew.planlabsolutions.org/api/food/get_meal_stats";
-
-  Future<Map<String, dynamic>> fetchMealsStats() async {
-    var id = await storage.read(key: 'loginId');
-    final Map<String, dynamic> formData = {
-      "record_for": "today",
-      "user_id": id
-    };
-
-    var result = await http.post(
-      statsApiUrl,
-      headers: {"content-type": "application/json"},
-      body: json.encode(formData),
-    );
-    setState(() {});
-    print('statssssss: ${json.decode(result.body)['data']['mealPercentage']}');
-    return json.decode(result.body)['data'];
-  }
-
   void initState() {
     super.initState();
     fetchMeals();
-    fetchMealsStats();
+    fetchMealsStats("today");
     EasyLoading.show(status: 'Loading...');
 
     Future.delayed(const Duration(seconds: 1), () {
@@ -95,6 +101,7 @@ class _FoodState extends State<Food> {
 
   @override
   Widget build(BuildContext context) {
+    print('statssssssssssssssssss: ${jsonEncode(foodStats)}');
     return SafeArea(
         child: Scaffold(
             appBar: AppBar(
@@ -364,6 +371,7 @@ class _FoodState extends State<Food> {
                                 GestureDetector(
                                   onTap: () {
                                     selectedIndex = 0;
+                                    fetchMealsStats("today");
                                     setState(() {});
                                   },
                                   child: Text(
@@ -381,6 +389,7 @@ class _FoodState extends State<Food> {
                                 GestureDetector(
                                   onTap: () {
                                     selectedIndex = 1;
+                                    fetchMealsStats("lastMonth");
                                     setState(() {});
                                   },
                                   child: Text('30 Days',
@@ -414,21 +423,42 @@ class _FoodState extends State<Food> {
     if (response.statusCode == 200) {
       todayMealStatModel =
           TodayMealStatModel.fromJson(jsonDecode(response.body));
-      print('statsssssssssss: ${response.body}');
       setState(() {});
     }
   }
 
+  final String statsApiUrl =
+      "http://sustianitnew.planlabsolutions.org/api/food/get_meal_stats";
+
+  fetchMealsStats(value) async {
+    var id = await storage.read(key: 'loginId');
+    final Map<String, dynamic> formData = {"record_for": value, "user_id": id};
+
+    var result = await http.post(
+      statsApiUrl,
+      headers: {"content-type": "application/json"},
+      body: json.encode(formData),
+    );
+
+    foodStats =
+        FoodStats.fromJson(jsonDecode(result.body)['data']['mealPercentage']);
+    setState(() {});
+  }
+
   selectedFun() {
     if (selectedIndex == 0) {
-      return todayMealStatModel == null
+      return foodStats == null
           ? Center(
               child: CircularProgressIndicator(),
             )
           : Center(
               child: PieChart(
                 dataMap: <String, double>{
-                  'Total Score': todayMealStatModel.data.totalScore.toDouble(),
+                  'Fruits': double.parse(foodStats.fruits),
+                  'Vegetable': double.parse(foodStats.vegetable),
+                  'Meat': double.parse(foodStats.meat),
+                  'Nuts': double.parse(foodStats.nuts),
+                  'Bakkery': double.parse(foodStats.bakkery)
                 },
                 animationDuration: Duration(
                   milliseconds: 800,
@@ -438,8 +468,8 @@ class _FoodState extends State<Food> {
                 initialAngleInDegree: 0,
                 chartType: ChartType.ring,
                 ringStrokeWidth: 10,
-                centerText:
-                    todayMealStatModel.data.totalScore.toString() + ' Score',
+                // centerText:
+                //     todayMealStatModel.data.totalScore.toString() + ' Score',
                 chartValuesOptions: ChartValuesOptions(
                   showChartValueBackground: true,
                   showChartValues: true,
@@ -453,15 +483,22 @@ class _FoodState extends State<Food> {
       return Center(
         child: PieChart(
           dataMap: <String, double>{
-            'Total Score': todayMealStatModel.data.totalScore.toDouble(),
+            'Fruits': double.parse(foodStats.fruits),
+            'Vegetable': double.parse(foodStats.vegetable),
+            'Meat': double.parse(foodStats.meat),
+            'Nuts': double.parse(foodStats.nuts),
+            'Bakkery': double.parse(foodStats.bakkery)
           },
-          animationDuration: Duration(milliseconds: 800),
+          animationDuration: Duration(
+            milliseconds: 800,
+          ),
           chartLegendSpacing: 32,
           chartRadius: MediaQuery.of(context).size.width,
           initialAngleInDegree: 0,
           chartType: ChartType.ring,
           ringStrokeWidth: 10,
-          centerText: todayMealStatModel.data.totalScore.toString() + ' Score',
+          // centerText:
+          //     todayMealStatModel.data.totalScore.toString() + ' Score',
           chartValuesOptions: ChartValuesOptions(
             showChartValueBackground: true,
             showChartValues: true,

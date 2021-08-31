@@ -4,9 +4,11 @@
 
 import 'dart:convert';
 
-TripTodayStatModel tripTodayStatModelFromJson(String str) => TripTodayStatModel.fromJson(json.decode(str));
+TripTodayStatModel tripTodayStatModelFromJson(String str) =>
+    TripTodayStatModel.fromJson(json.decode(str));
 
-String tripTodayStatModelToJson(TripTodayStatModel data) => json.encode(data.toJson());
+String tripTodayStatModelToJson(TripTodayStatModel data) =>
+    json.encode(data.toJson());
 
 class TripTodayStatModel {
   TripTodayStatModel({
@@ -19,17 +21,18 @@ class TripTodayStatModel {
   Data data;
   String message;
 
-  factory TripTodayStatModel.fromJson(Map<String, dynamic> json) => TripTodayStatModel(
-    success: json["success"],
-    data: Data.fromJson(json["data"]),
-    message: json["message"],
-  );
+  factory TripTodayStatModel.fromJson(Map<String, dynamic> json) =>
+      TripTodayStatModel(
+        success: json["success"],
+        data: Data.fromJson(json["data"]),
+        message: json["message"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "success": success,
-    "data": data.toJson(),
-    "message": message,
-  };
+        "success": success,
+        "data": data.toJson(),
+        "message": message,
+      };
 }
 
 class Data {
@@ -48,20 +51,21 @@ class Data {
   bool status;
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
-    tripPercentage: TripPercentage.fromJson(json["tripPercentage"]),
-    occasionalTripScore: json["occasionalTripScore"],
-    regularTripScore: json["regularTripScore"],
-    list: List<ListElement>.from(json["list"].map((x) => ListElement.fromJson(x))),
-    status: json["status"],
-  );
+        tripPercentage: TripPercentage.fromJson(json["tripPercentage"]),
+        occasionalTripScore: json["occasionalTripScore"],
+        regularTripScore: json["regularTripScore"],
+        list: List<ListElement>.from(
+            json["list"].map((x) => ListElement.fromJson(x))),
+        status: json["status"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "tripPercentage": tripPercentage.toJson(),
-    "occasionalTripScore": occasionalTripScore,
-    "regularTripScore": regularTripScore,
-    "list": List<dynamic>.from(list.map((x) => x.toJson())),
-    "status": status,
-  };
+        "tripPercentage": tripPercentage.toJson(),
+        "occasionalTripScore": occasionalTripScore,
+        "regularTripScore": regularTripScore,
+        "list": List<dynamic>.from(list.map((x) => x.toJson())),
+        "status": status,
+      };
 }
 
 class ListElement {
@@ -94,34 +98,34 @@ class ListElement {
   DateTime updatedAt;
 
   factory ListElement.fromJson(Map<String, dynamic> json) => ListElement(
-    id: json["id"],
-    userId: json["user_id"],
-    tripTitle: json["trip_title"],
-    tripDistance: json["trip_distance"],
-    distanceType: json["distance_type"],
-    tripDays: List<int>.from(json["trip_days"].map((x) => x)),
-    tripType: json["trip_type"],
-    vehicleName: json["vehicle_name"],
-    fuelType: json["fuel_type"],
-    score: json["score"],
-    createdAt: DateTime.parse(json["created_at"]),
-    updatedAt: DateTime.parse(json["updated_at"]),
-  );
+        id: json["id"],
+        userId: json["user_id"],
+        tripTitle: json["trip_title"],
+        tripDistance: json["trip_distance"],
+        distanceType: json["distance_type"],
+        tripDays: List<int>.from(json["trip_days"].map((x) => x)),
+        tripType: json["trip_type"],
+        vehicleName: json["vehicle_name"],
+        fuelType: json["fuel_type"],
+        score: json["score"],
+        createdAt: DateTime.parse(json["created_at"]),
+        updatedAt: DateTime.parse(json["updated_at"]),
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "user_id": userId,
-    "trip_title": tripTitle,
-    "trip_distance": tripDistance,
-    "distance_type": distanceType,
-    "trip_days": List<dynamic>.from(tripDays.map((x) => x)),
-    "trip_type": tripType,
-    "vehicle_name": vehicleName,
-    "fuel_type": fuelType,
-    "score": score,
-    "created_at": createdAt.toIso8601String(),
-    "updated_at": updatedAt.toIso8601String(),
-  };
+        "id": id,
+        "user_id": userId,
+        "trip_title": tripTitle,
+        "trip_distance": tripDistance,
+        "distance_type": distanceType,
+        "trip_days": List<dynamic>.from(tripDays.map((x) => x)),
+        "trip_type": tripType,
+        "vehicle_name": vehicleName,
+        "fuel_type": fuelType,
+        "score": score,
+        "created_at": createdAt.toIso8601String(),
+        "updated_at": updatedAt.toIso8601String(),
+      };
 }
 
 class TripPercentage {
@@ -132,10 +136,10 @@ class TripPercentage {
   String the3;
 
   factory TripPercentage.fromJson(Map<String, dynamic> json) => TripPercentage(
-    the3: json["3"],
-  );
+        the3: json["3"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "3": the3,
-  };
+        "3": the3,
+      };
 }

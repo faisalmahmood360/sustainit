@@ -23,6 +23,25 @@ import 'package:pie_chart/pie_chart.dart';
 
 var storage = FlutterSecureStorage();
 
+class TravelStats {
+  String hybrid;
+  String electric;
+  String gasoline;
+
+  TravelStats({this.hybrid, this.electric, this.gasoline});
+
+  factory TravelStats.fromJson(Map<String, dynamic> json) => TravelStats(
+      hybrid: json['Hybrid'],
+      electric: json['Electric'],
+      gasoline: json['Gasoline']);
+
+  Map<String, dynamic> toJson() => {
+        "hybrid": hybrid,
+        "electric": electric,
+        "gasoline": gasoline,
+      };
+}
+
 class Trip extends StatefulWidget {
   @override
   _TripState createState() => _TripState();
@@ -35,14 +54,13 @@ class _TripState extends State<Trip> {
 
   DateTime selectedDate;
   int selectedIndex = 0;
-  TripTodayStatModel tripTodayStatModel;
-  TripLastMonthStat tripLastMonthStat;
+  TravelStats travelStats;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    todaytripStatApiSubmit();
-    lastMonthtripStatApiSubmit();
+    fetchTravelStats("today");
   }
 
   @override
@@ -58,15 +76,15 @@ class _TripState extends State<Trip> {
         "user_id": id
       };
 
-      print('dataaaaa: ${formData}');
       var result = await http.post(
         apiUrl,
         headers: {"content-Type": "application/json"},
         body: json.encode(formData),
       );
-      print('mealssss: ${json.decode(result.body)['data']['list']}');
       return json.decode(result.body)['data']['list'];
     }
+
+    print('statsssssssss: ${jsonEncode(travelStats)}');
 
     return SafeArea(
       child: Scaffold(
@@ -331,6 +349,7 @@ class _TripState extends State<Trip> {
                               GestureDetector(
                                 onTap: () {
                                   selectedIndex = 0;
+                                  fetchTravelStats("today");
                                   setState(() {});
                                 },
                                 child: Text(
@@ -348,6 +367,7 @@ class _TripState extends State<Trip> {
                               GestureDetector(
                                 onTap: () {
                                   selectedIndex = 1;
+                                  fetchTravelStats("lastMonth");
                                   setState(() {});
                                 },
                                 child: Text('30 Days',
@@ -378,22 +398,84 @@ class _TripState extends State<Trip> {
     );
   }
 
-  todaytripStatApiSubmit() async {
-    var apis = ApiManager();
-    http.Response response = await apis.tripStatApi('today');
-    if (response.statusCode == 200) {
-      tripTodayStatModel =
-          TripTodayStatModel.fromJson(jsonDecode(response.body));
-      setState(() {});
-    }
+  final String statsApiUrl =
+      "http://sustianitnew.planlabsolutions.org/api/travel/get_trip_stats";
+
+  fetchTravelStats(value) async {
+    var id = await storage.read(key: 'loginId');
+    final Map<String, dynamic> formData = {"record_for": value, "user_id": id};
+
+    var result = await http.post(
+      statsApiUrl,
+      headers: {"content-type": "application/json"},
+      body: json.encode(formData),
+    );
+
+    print('statsssssss: ${jsonDecode(result.body)['data']['tripPercentage']}');
+    travelStats =
+        TravelStats.fromJson(jsonDecode(result.body)['data']['tripPercentage']);
+    setState(() {});
   }
 
-  lastMonthtripStatApiSubmit() async {
-    var apis = ApiManager();
-    http.Response response = await apis.tripStatApi('lastMonth');
-    if (response.statusCode == 200) {
-      tripLastMonthStat = TripLastMonthStat.fromJson(jsonDecode(response.body));
-      setState(() {});
+  selectedFun() {
+    if (selectedIndex == 0) {
+      return travelStats == null
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : Center(
+              child: PieChart(
+                dataMap: <String, double>{
+                  'Hybrid': double.parse(travelStats.hybrid),
+                  'Electric': double.parse(travelStats.electric),
+                  'Gasoline': double.parse(travelStats.gasoline),
+                },
+                animationDuration: Duration(
+                  milliseconds: 800,
+                ),
+                chartLegendSpacing: 32,
+                chartRadius: MediaQuery.of(context).size.width,
+                initialAngleInDegree: 0,
+                chartType: ChartType.ring,
+                ringStrokeWidth: 10,
+                // centerText:
+                //     todayMealStatModel.data.totalScore.toString() + ' Score',
+                chartValuesOptions: ChartValuesOptions(
+                  showChartValueBackground: true,
+                  showChartValues: true,
+                  showChartValuesInPercentage: false,
+                  showChartValuesOutside: false,
+                  decimalPlaces: 1,
+                ),
+              ),
+            );
+    } else {
+      return Center(
+        child: PieChart(
+          dataMap: <String, double>{
+            'Hybrid': double.parse(travelStats.hybrid),
+            'Electric': double.parse(travelStats.electric),
+            'Gasoline': double.parse(travelStats.gasoline),
+          },
+          animationDuration: Duration(
+            milliseconds: 800,
+          ),
+          chartLegendSpacing: 32,
+          chartRadius: MediaQuery.of(context).size.width,
+          initialAngleInDegree: 0,
+          chartType: ChartType.ring,
+          ringStrokeWidth: 10,
+          // centerText:
+          //     todayMealStatModel.data.totalScore.toString() + ' Score',
+          chartValuesOptions: ChartValuesOptions(
+            showChartValueBackground: true,
+            showChartValues: true,
+            showChartValuesInPercentage: false,
+            showChartValuesOutside: false,
+            decimalPlaces: 1,
+          ),
+        ),
+      );
     }
   }
 
@@ -412,64 +494,5 @@ class _TripState extends State<Trip> {
         selectedDate = picked;
       });
     } else {}
-  }
-
-  selectedFun() {
-    if (selectedIndex == 0) {
-      return tripTodayStatModel == null
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : Center(
-              child: PieChart(
-                dataMap: <String, double>{
-                  'Ocassion':
-                      tripTodayStatModel.data.occasionalTripScore.toDouble(),
-                  'Regular':
-                      tripTodayStatModel.data.regularTripScore.toDouble(),
-                },
-                animationDuration: Duration(milliseconds: 800),
-                chartLegendSpacing: 32,
-                chartRadius: MediaQuery.of(context).size.width,
-                initialAngleInDegree: 0,
-                chartType: ChartType.ring,
-                ringStrokeWidth: 10,
-                centerText:
-                    tripTodayStatModel.data.list.first.score.toString() +
-                        ' Score',
-                chartValuesOptions: ChartValuesOptions(
-                  showChartValueBackground: true,
-                  showChartValues: true,
-                  showChartValuesInPercentage: false,
-                  showChartValuesOutside: false,
-                  decimalPlaces: 1,
-                ),
-              ),
-            );
-    } else {
-      return Center(
-        child: PieChart(
-          dataMap: <String, double>{
-            'Ocassion': tripLastMonthStat.data.occasionalTripScore.toDouble(),
-            'Regular': tripLastMonthStat.data.regularTripScore.toDouble(),
-          },
-          animationDuration: Duration(milliseconds: 800),
-          chartLegendSpacing: 32,
-          chartRadius: MediaQuery.of(context).size.width,
-          initialAngleInDegree: 0,
-          chartType: ChartType.ring,
-          ringStrokeWidth: 10,
-          centerText:
-              tripLastMonthStat.data.list.first.score.toString() + ' Score',
-          chartValuesOptions: ChartValuesOptions(
-            showChartValueBackground: true,
-            showChartValues: true,
-            showChartValuesInPercentage: false,
-            showChartValuesOutside: false,
-            decimalPlaces: 1,
-          ),
-        ),
-      );
-    }
   }
 }
