@@ -11,6 +11,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:foodapp/providers/auth.dart';
 import 'package:http/http.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class EditTrip extends StatefulWidget {
@@ -23,16 +24,16 @@ class EditTrip extends StatefulWidget {
   String transport;
   var tripId;
 
-  EditTrip(
-      {this.title,
-      this.days,
-      this.distance,
-      this.fuelType,
-      this.transport,
-      this.travel,
-      this.type,
-      this.tripId,
-      });
+  EditTrip({
+    this.title,
+    this.days,
+    this.distance,
+    this.fuelType,
+    this.transport,
+    this.travel,
+    this.type,
+    this.tripId,
+  });
 
   @override
   _EditTripState createState() => _EditTripState();
@@ -40,69 +41,95 @@ class EditTrip extends StatefulWidget {
 
 class _EditTripState extends State<EditTrip> {
   List<String> _distanceTypes = ['Meter', 'KM', 'Mile'];
-  List<String> _transport_types = [];
-  List<String> _gasolineVehicles = ['Toyota'];
-  List<String> _hybridVehicles = ['Honda'];
-  List<String> _electricVehicles = ['Szuki'];
+  List<dynamic> _transport_types = [];
+  List<String> _gasolineVehicles = [];
+  List<String> _hybridVehicles = [];
+  List<String> _electricVehicles = [];
   String _selectedTransportType;
-  // List<int> _tripDays = widget.days;
+  List<int> _tripDays = [3];
   final _formKey = GlobalKey<FormState>();
   List<bool> _fuel_types = [true, false, false];
   String _tripTitle,
       _tripDistance,
       _distanceType = "Meter",
-      _tripType,
-      _vehicleName = "Toyota",
-      _fuelType = "1";
-  int _userId = 1;
+      _tripType = "regular",
+      _vehicleName = "",
+      _fuelType = "";
+  List<dynamic> gasoline = [];
 
   final String apiUrl =
       "http://sustianitnew.planlabsolutions.org/api/travel/trip_detail";
-  final Map<String, dynamic> formData = {'habbites': '1'};
 
-  Future<List<dynamic>> fetchUsers() async {
+  Future<List<dynamic>> fetchTripData() async {
     var result = await http.get(apiUrl);
     setState(() {
-      _gasolineVehicles = json.decode(result.body)['data'];
+      _gasolineVehicles = json
+          .decode(result.body)['data']['vehical']['gasoline']
+          .cast<String>();
+      _hybridVehicles =
+          json.decode(result.body)['data']['vehical']['hybrid'].cast<String>();
+      _electricVehicles = json
+          .decode(result.body)['data']['vehical']['electric']
+          .cast<String>();
+      if (widget.fuelType == "1") {
+        _transport_types = json
+            .decode(result.body)['data']['vehical']['gasoline']
+            .cast<String>();
+      }
+      if (widget.fuelType == "2") {
+        _transport_types = json
+            .decode(result.body)['data']['vehical']['hybrid']
+            .cast<String>();
+      }
+      if (widget.fuelType == "3") {
+        _transport_types = json
+            .decode(result.body)['data']['vehical']['electric']
+            .cast<String>();
+      }
     });
-    print(json.decode(result.body)['data']);
     return json.decode(result.body)['data'];
   }
 
   void initState() {
     super.initState();
-    fetchUsers();
+    fetchTripData();
+    print('widget: ${widget.transport}');
     setState(() {
-      _transport_types = _gasolineVehicles;
+      _vehicleName = widget.transport;
     });
   }
- final titleController = TextEditingController();
+
+  final titleController = TextEditingController();
   final distanceController = TextEditingController();
- var storage = FlutterSecureStorage();
+  var storage = FlutterSecureStorage();
   @override
   Widget build(BuildContext context) {
     AuthProvider auth = Provider.of<AuthProvider>(context);
-    print('gasoline list: ${_gasolineVehicles}');
-    var editTrip = () async{
+    var editTrip = () async {
       final form = _formKey.currentState;
       if (form.validate()) {
         var id = await storage.read(key: 'loginId');
         form.save();
         EasyLoading.show(status: 'Editing travel...');
-        print('Trip title ${widget.title}');
-        print('Trip days ${widget.days}');
-        print('Fuel type ${widget.fuelType}');
-        print('Distance type ${widget.distance}');
         auth
-            .editTravel(widget.tripId,widget.title, widget.distance, widget.travel, widget.days,
-            widget.type, widget.transport, widget.fuelType,id)
+            .editTravel(
+                widget.tripId,
+                widget.title,
+                widget.distance,
+                widget.travel,
+                widget.days,
+                widget.type,
+                widget.transport,
+                widget.fuelType,
+                id)
             .then((response) {
           var result = response['data'];
           if (response['status']) {
             print(response);
             Timer(Duration(seconds: 1), () {
               EasyLoading.dismiss();
-              Navigator.push(context, MaterialPageRoute(builder: (context)=>Trip()));
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => Trip()));
             });
           } else {
             EasyLoading.dismiss();
@@ -174,7 +201,6 @@ class _EditTripState extends State<EditTrip> {
                           padding: EdgeInsets.only(top: 10),
                           child: TextFormField(
                             onChanged: (text) {
-
                               widget.title = text;
                             },
                             initialValue: widget.title,
@@ -217,10 +243,8 @@ class _EditTripState extends State<EditTrip> {
                                 padding: EdgeInsets.only(top: 10),
                                 child: TextFormField(
                                   onChanged: (text) {
-
                                     widget.distance = text;
                                   },
-
                                   initialValue: widget.distance,
                                   onSaved: (value) => _tripDistance = value,
                                   decoration: InputDecoration(
@@ -610,7 +634,7 @@ class _EditTripState extends State<EditTrip> {
                                       setState(() {
                                         widget.fuelType = "1";
                                         _transport_types = _gasolineVehicles;
-                                        widget.transport = "Toyota";
+                                        widget.transport = _gasolineVehicles[0];
                                       });
                                     },
                                     shape: new RoundedRectangleBorder(
@@ -637,7 +661,7 @@ class _EditTripState extends State<EditTrip> {
                                       setState(() {
                                         widget.fuelType = "2";
                                         _transport_types = _hybridVehicles;
-                                        widget.transport = "Honda";
+                                        widget.transport = _hybridVehicles[0];
                                       });
                                     },
                                     shape: new RoundedRectangleBorder(
@@ -664,7 +688,7 @@ class _EditTripState extends State<EditTrip> {
                                       setState(() {
                                         widget.fuelType = "3";
                                         _transport_types = _electricVehicles;
-                                        widget.transport = "Szuki";
+                                        widget.transport = _electricVehicles[0];
                                       });
                                     },
                                     shape: new RoundedRectangleBorder(
@@ -710,7 +734,9 @@ class _EditTripState extends State<EditTrip> {
                               items: _transport_types.map((location) {
                                 return DropdownMenuItem(
                                   child: new SizedBox(
-                                      width: 200.0, child: new Text(location)),
+                                      width: 200.0,
+                                      child: new Text(
+                                          toBeginningOfSentenceCase(location))),
                                   value: widget.transport,
                                 );
                               }).toList(),
@@ -730,15 +756,21 @@ class _EditTripState extends State<EditTrip> {
                             color: Color(0xff50E569),
                             child: Text('Update Trip'),
                             onPressed: () {
-
                               print('Title: ' +
                                   widget.title +
-                               'Distance: ' +   widget.distance.toString() +
-                                'Travel: ' + widget.travel.toString()  +
-                                'Type: ' +  widget.type.toString() +
-                                 'Days: ' +  widget.days.toString() +
-                                 'FuelType: ' + widget.fuelType.toString() +
-                                 'Transport: ' +  widget.transport + widget.tripId);
+                                  'Distance: ' +
+                                  widget.distance.toString() +
+                                  'Travel: ' +
+                                  widget.travel.toString() +
+                                  'Type: ' +
+                                  widget.type.toString() +
+                                  'Days: ' +
+                                  widget.days.toString() +
+                                  'FuelType: ' +
+                                  widget.fuelType.toString() +
+                                  'Transport: ' +
+                                  widget.transport +
+                                  widget.tripId);
                               editTrip();
                               // editTripSubmit(widget.tripId, widget.title, widget.distance.toString(), widget.travel.toString(),widget.days.toList(), widget.type.toString() ,   widget.fuelType.toString(),  widget.transport );
                             },
@@ -754,15 +786,15 @@ class _EditTripState extends State<EditTrip> {
       ),
     );
   }
-  editTripSubmit(tripId,title,distance,distanceType,List tripDays,tripType,fuelType,vehicleName)async{
+
+  editTripSubmit(tripId, title, distance, distanceType, List tripDays, tripType,
+      fuelType, vehicleName) async {
     var apis = ApiManager();
-    Response response = await apis.editTravelApi(tripId, title, distance, distanceType, tripDays, tripType, fuelType, vehicleName);
-    if(response.statusCode == 200){
-      Navigator.push(context, MaterialPageRoute(builder: (context)=> AddTrip()));
-    }
-    else{
-
-    }
-
+    Response response = await apis.editTravelApi(tripId, title, distance,
+        distanceType, tripDays, tripType, fuelType, vehicleName);
+    if (response.statusCode == 200) {
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => AddTrip()));
+    } else {}
   }
 }

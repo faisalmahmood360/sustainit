@@ -1,23 +1,11 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:foodapp/ApiManager/ApiManager.dart';
-import 'package:foodapp/models/ApiModels/trip30dayStatModel.dart';
-import 'package:foodapp/models/ApiModels/triptodaystatmodel.dart';
 import 'package:foodapp/screens/EditTrip.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:another_flushbar/flushbar.dart';
-import 'package:date_picker_timeline/date_picker_timeline.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:foodapp/screens/dashboard.dart';
-import 'package:foodapp/providers/auth.dart';
-import 'package:http/http.dart';
-import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-// import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:date_range_picker/date_range_picker.dart' as DateRangePicker;
 import 'package:pie_chart/pie_chart.dart';
 
@@ -58,7 +46,6 @@ class _TripState extends State<Trip> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     fetchTravelStats("today");
   }
@@ -83,8 +70,6 @@ class _TripState extends State<Trip> {
       );
       return json.decode(result.body)['data']['list'];
     }
-
-    print('statsssssssss: ${jsonEncode(travelStats)}');
 
     return SafeArea(
       child: Scaffold(
@@ -410,8 +395,6 @@ class _TripState extends State<Trip> {
       headers: {"content-type": "application/json"},
       body: json.encode(formData),
     );
-
-    print('statsssssss: ${jsonDecode(result.body)['data']['tripPercentage']}');
     travelStats =
         TravelStats.fromJson(jsonDecode(result.body)['data']['tripPercentage']);
     setState(() {});

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:foodapp/providers/auth.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class AddTrip extends StatefulWidget {
@@ -15,32 +16,21 @@ class AddTrip extends StatefulWidget {
 
 class _AddTripState extends State<AddTrip> {
   List<String> _distanceTypes = ['Meter', 'KM', 'Mile'];
-  List<String> _transport_types = [];
-  List<String> _gasolineVehicles = ['Toyota'];
-  List<String> _hybridVehicles = ['Honda'];
-  List<String> _electricVehicles = ['Szuki'];
+  List<dynamic> _transport_types = [];
+  List<String> _gasolineVehicles = [];
+  List<String> _hybridVehicles = [];
+  List<String> _electricVehicles = [];
   String _selectedTransportType;
-  List<int> _tripDays = [3, 4, 5];
+  List<int> _tripDays = [3];
   final _formKey = GlobalKey<FormState>();
   List<bool> _fuel_types = [true, false, false];
   String _tripTitle,
       _tripDistance,
       _distanceType = "Meter",
       _tripType = "regular",
-      _vehicleName = "Toyota",
+      _vehicleName = "",
       _fuelType = "1";
-  int _userId = 1;
-  List<dynamic> gasoline = [
-    {
-      "id": 4,
-      "name": "Kia",
-      "image": "1625749513.jpg",
-      "fuel_type": "1",
-      "score": 20,
-      "created_at": "2021-07-08T03:05:13.000000Z",
-      "updated_at": "2021-07-08T03:05:13.000000Z"
-    }
-  ];
+  List<dynamic> gasoline = [];
 
   final String apiUrl =
       "http://sustianitnew.planlabsolutions.org/api/travel/trip_detail";
@@ -48,38 +38,42 @@ class _AddTripState extends State<AddTrip> {
   Future<List<dynamic>> fetchTripData() async {
     var result = await http.get(apiUrl);
     setState(() {
-      gasoline = json.decode(result.body)['data']['vehical']['gasoline'];
+      _gasolineVehicles = json
+          .decode(result.body)['data']['vehical']['gasoline']
+          .cast<String>();
+      _hybridVehicles =
+          json.decode(result.body)['data']['vehical']['hybrid'].cast<String>();
+      _electricVehicles = json
+          .decode(result.body)['data']['vehical']['electric']
+          .cast<String>();
+      _transport_types = json
+          .decode(result.body)['data']['vehical']['gasoline']
+          .cast<String>();
+      _vehicleName = json.decode(result.body)['data']['vehical']['gasoline'][0];
     });
-    print(
-        'datttttttttaaaaaaaaa: ${json.decode(result.body)['data']['vehical']}');
     return json.decode(result.body)['data'];
   }
 
   void initState() {
     super.initState();
     fetchTripData();
-    // setState(() {
-    //   _transport_types = _gasolineVehicles;
-    // });
   }
 
   @override
   Widget build(BuildContext context) {
     AuthProvider auth = Provider.of<AuthProvider>(context);
-    print('gasoline list: ${gasoline}');
+
     var addTrip = () async {
       var id = await storage.read(key: 'loginId');
       final form = _formKey.currentState;
       if (form.validate()) {
         form.save();
         EasyLoading.show(status: 'Adding travel...');
-        print('Trip title ${_tripTitle}');
-        print('Trip days ${_tripDays}');
-        print('Fuel type ${_fuelType}');
-        print('Distance type ${_distanceType}');
+        print('vehicle:  ${_vehicleName.toLowerCase()}');
+        print('_fuelType:  ${_fuelType}');
         auth
             .addTravel(_tripTitle, _tripDistance, _distanceType, _tripDays,
-                _tripType, _vehicleName, _fuelType, id)
+                _tripType, _vehicleName.toLowerCase(), _fuelType, id)
             .then((response) {
           var result = response['data'];
           if (response['status']) {
@@ -587,7 +581,7 @@ class _AddTripState extends State<AddTrip> {
                                       setState(() {
                                         _fuelType = "1";
                                         _transport_types = _gasolineVehicles;
-                                        _vehicleName = "Toyota";
+                                        _vehicleName = _gasolineVehicles[0];
                                       });
                                     },
                                     shape: new RoundedRectangleBorder(
@@ -614,7 +608,7 @@ class _AddTripState extends State<AddTrip> {
                                       setState(() {
                                         _fuelType = "2";
                                         _transport_types = _hybridVehicles;
-                                        _vehicleName = "Honda";
+                                        _vehicleName = _hybridVehicles[0];
                                       });
                                     },
                                     shape: new RoundedRectangleBorder(
@@ -641,7 +635,7 @@ class _AddTripState extends State<AddTrip> {
                                       setState(() {
                                         _fuelType = "3";
                                         _transport_types = _electricVehicles;
-                                        _vehicleName = "Szuki";
+                                        _vehicleName = _electricVehicles[0];
                                       });
                                     },
                                     shape: new RoundedRectangleBorder(
@@ -687,7 +681,9 @@ class _AddTripState extends State<AddTrip> {
                               items: _transport_types.map((location) {
                                 return DropdownMenuItem(
                                   child: new SizedBox(
-                                      width: 200.0, child: new Text(location)),
+                                      width: 200.0,
+                                      child: new Text(
+                                          toBeginningOfSentenceCase(location))),
                                   value: location,
                                 );
                               }).toList(),
