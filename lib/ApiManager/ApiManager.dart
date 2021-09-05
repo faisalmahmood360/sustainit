@@ -102,15 +102,10 @@ class ApiManager {
   }
 
   getLeaderboardDetailApi() async {
-    print('api andr');
-    // var id = await storage.read(key: 'loginId');
-    // print('id is'+id);
     String url =
-        'http://sustianitnew.planlabsolutions.org/api/leaderboard/leader-board';
-    print('url is ' + url);
-    final response =
-        await http.post(Uri.parse(url), body: {'record_for': 'lastMonth'});
-    print('res is jvgv' + response.body);
+        'http://sustianitnew.planlabsolutions.org/api/leaderboard/get_user_leaderboard';
+    final response = await http.post(Uri.parse(url),
+        body: {'record_of': 'lastMonth', 'record_for': "1"});
     return response;
   }
 }

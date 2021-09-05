@@ -60,11 +60,6 @@ class _FoodState extends State<Food> {
   List<dynamic> list = [];
   List<int> selectedItems = [];
   Map<String, dynamic> stats = {"Fruits": 30, "Vegetable": 20};
-  Map<String, double> dataMap = {
-    "Fruits": 42.8599999999999994315658113919198513031005859375,
-    "Vegetable": 28.57000000000000028421709430404007434844970703125,
-    "Meat": 28.57000000000000028421709430404007434844970703125
-  };
 
   final String apiUrl =
       "http://sustianitnew.planlabsolutions.org/api/food/get_user_meal";
@@ -101,7 +96,6 @@ class _FoodState extends State<Food> {
 
   @override
   Widget build(BuildContext context) {
-    print('statssssssssssssssssss: ${jsonEncode(foodStats)}');
     return SafeArea(
         child: Scaffold(
             appBar: AppBar(
@@ -252,6 +246,11 @@ class _FoodState extends State<Food> {
                                                   i++) {
                                                 items.add(list[index][i]['id']);
                                               }
+                                              // if (DateTime.now()
+                                              //     .isAtSameMomentAs(
+                                              //         new DateTime(list[index]
+                                              //             [0]['created_at']))) {
+                                              // } else {
                                               Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
@@ -261,6 +260,7 @@ class _FoodState extends State<Food> {
                                                               mealId: list[
                                                                       index][0][
                                                                   'meal_id'])));
+                                              // }
                                             },
                                             child: Column(
                                               children: [

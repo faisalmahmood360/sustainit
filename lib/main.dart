@@ -87,6 +87,7 @@ class MyApp extends StatelessWidget {
             '/food': (context) => Food(),
             '/addFood': (context) => AddFood(),
             '/firstLogin': (context) => FirstLogin(),
+            '/leaderBoard': (context) => LeaderBoard()
           }),
     );
   }

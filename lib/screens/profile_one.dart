@@ -1,21 +1,38 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:foodapp/ApiManager/ApiManager.dart';
-import 'package:foodapp/models/ApiModels/GetuserDetailDashboardModel.dart';
-import 'package:foodapp/screens/compete.dart';
 import 'package:foodapp/screens/dashboard.dart';
+import 'package:foodapp/screens/leader_board.dart';
 import 'package:foodapp/screens/profile_two.dart';
-import 'package:http/http.dart';
+import 'package:foodapp/utils/shared_preference.dart';
+import 'package:http/http.dart' as http;
+
+var storage = FlutterSecureStorage();
 
 class ProfileOne extends StatefulWidget {
+  int userId;
+  ProfileOne({this.userId});
   @override
   _ProfileOne createState() => _ProfileOne();
 }
 
 class _ProfileOne extends State<ProfileOne> {
+  String habbit = '';
   int currentIndex = 0;
+  String name;
+  String email;
+  String image;
+  String dietType;
+  int rank = 1;
+  int foodTodayScore = 0;
+  int foodLastMonthScore = 0;
+  int travelTodayScore = 0;
+  int travelLastMonthScore = 0;
 
   void changePage(int index) {
     setState(() {
@@ -23,16 +40,107 @@ class _ProfileOne extends State<ProfileOne> {
     });
   }
 
-  GetUserDetailModel getUserDetailModel;
+  String k_m_b_generator(num) {
+    if (num > 999 && num < 99999) {
+      return "${(num / 1000).toStringAsFixed(1)} K";
+    } else if (num > 99999 && num < 999999) {
+      return "${(num / 1000).toStringAsFixed(0)} K";
+    } else if (num > 999999 && num < 999999999) {
+      return "${(num / 1000000).toStringAsFixed(1)} M";
+    } else if (num > 999999999) {
+      return "${(num / 1000000000).toStringAsFixed(1)} B";
+    } else {
+      return num.toString();
+    }
+  }
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    getUserDetailSubmit();
+
+    UserPreferences().getHabbit().then((value) {
+      print('habbitttttttt: ${value}');
+      if (value == "2") {
+        setState(() {
+          habbit = "Vegetarian";
+        });
+      } else if (value == "1") {
+        setState(() {
+          habbit = "Vegan";
+        });
+      } else {
+        setState(() {
+          habbit = "Omnivore";
+        });
+      }
+    });
+
+    Future<List<dynamic>> getProfileDetails() async {
+      final String apiUrl =
+          "http://sustianitnew.planlabsolutions.org/api/user_profile/${widget.userId}";
+      var result = await http.get(
+        apiUrl,
+        headers: {"content-type": "application/json"},
+      );
+      setState(() {
+        name = json.decode(result.body)['data']['name'];
+        email = json.decode(result.body)['data']['email'];
+        dietType = json.decode(result.body)['data']['diet_type'];
+      });
+      return json.decode(result.body)['data'];
+    }
+
+    Future<List<dynamic>> getDashboardDetails() async {
+      var id = await storage.read(key: 'loginId');
+      final String apiUrl =
+          "http://sustianitnew.planlabsolutions.org/api/dashboard/user_dashboard_detail";
+      final Map<String, dynamic> formData = {"user_id": id};
+      var result = await http.post(
+        apiUrl,
+        headers: {"content-type": "application/json"},
+        body: json.encode(formData),
+      );
+      print('result ${json.decode(result.body)['data']}');
+      setState(() {
+        foodTodayScore = json.decode(result.body)['food_today_score'];
+        foodLastMonthScore = json.decode(result.body)['food_lastMonth_score'];
+        travelTodayScore = json.decode(result.body)['travel_today_score'];
+        travelLastMonthScore =
+            json.decode(result.body)['travel_lastMonth_score'];
+      });
+      return json.decode(result.body)['data'];
+    }
+
+    getProfileDetails();
+    getDashboardDetails();
   }
 
   @override
   Widget build(BuildContext context) {
+    var competeUser = () async {
+      var id = await storage.read(key: 'loginId');
+      EasyLoading.show(status: 'Adding compete...');
+
+      final String addMealUrl =
+          "http://sustianitnew.planlabsolutions.org/api/compete/save_compete";
+      final Map<String, dynamic> formData = {
+        "user_id": id,
+        "competitor_id": widget.userId,
+        "user_type": habbit
+      };
+
+      var result = await http.post(
+        addMealUrl,
+        headers: {"content-type": "application/json"},
+        body: json.encode(formData),
+      );
+      Timer(Duration(seconds: 1), () {
+        EasyLoading.dismiss();
+        Navigator.pushReplacementNamed(context, '/leaderBoard');
+      });
+      print('result: ${result.body}');
+    };
+
     return SafeArea(
         child: Scaffold(
       appBar: AppBar(
@@ -42,7 +150,7 @@ class _ProfileOne extends State<ProfileOne> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => Home()),
+                MaterialPageRoute(builder: (context) => LeaderBoard()),
               );
             }),
         title: Text(
@@ -57,7 +165,7 @@ class _ProfileOne extends State<ProfileOne> {
         centerTitle: false,
         titleSpacing: 0,
       ),
-      body: getUserDetailModel == null
+      body: name == null
           ? Center(
               child: CircularProgressIndicator(),
             )
@@ -78,10 +186,10 @@ class _ProfileOne extends State<ProfileOne> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Flexible(
-                              child: getUserDetailModel.userDetail.image == null
+                              child: image == null
                                   ? Image.asset('assets/images/dummy.png')
-                                  : Image.asset(
-                                      getUserDetailModel.userDetail.image),
+                                  : Image.network(
+                                      'https://sustianitnew.planlabsolutions.org/uploads/${widget.userId}/${image}'),
                             ),
                           ],
                         ),
@@ -90,12 +198,12 @@ class _ProfileOne extends State<ProfileOne> {
                           children: [
                             Column(
                               children: [
-                                Text(getUserDetailModel.userDetail.name,
+                                Text(name,
                                     style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w700)),
                                 SizedBox(height: 2),
-                                Text('@kevinbryne')
+                                Text(email)
                               ],
                             )
                           ],
@@ -112,7 +220,7 @@ class _ProfileOne extends State<ProfileOne> {
                                           fontSize: 18,
                                           fontWeight: FontWeight.w700)),
                                   SizedBox(height: 2),
-                                  Text('Omnivore')
+                                  Text(dietType)
                                 ],
                               ),
                             ),
@@ -124,7 +232,7 @@ class _ProfileOne extends State<ProfileOne> {
                                           fontSize: 18,
                                           fontWeight: FontWeight.w700)),
                                   SizedBox(height: 2),
-                                  Text('1')
+                                  Text('${rank}')
                                 ],
                               ),
                             ),
@@ -139,12 +247,7 @@ class _ProfileOne extends State<ProfileOne> {
                                           color: Color(0xff50E569),
                                           child: Text('Compete'),
                                           onPressed: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      ProfileTwo()),
-                                            );
+                                            competeUser();
                                           },
                                           shape: RoundedRectangleBorder(
                                               borderRadius:
@@ -195,7 +298,8 @@ class _ProfileOne extends State<ProfileOne> {
                                           fontSize: 12,
                                         )),
                                     Text(
-                                      getUserDetailModel.totalScore.toString(),
+                                      k_m_b_generator(
+                                          foodTodayScore + travelTodayScore),
                                       style: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w700),
@@ -215,7 +319,8 @@ class _ProfileOne extends State<ProfileOne> {
                                           fontSize: 12,
                                         )),
                                     Text(
-                                      getUserDetailModel.totalScore.toString(),
+                                      k_m_b_generator(foodLastMonthScore +
+                                          travelLastMonthScore),
                                       style: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w700),
@@ -259,8 +364,7 @@ class _ProfileOne extends State<ProfileOne> {
                                           fontSize: 12,
                                         )),
                                     Text(
-                                      getUserDetailModel.foodTodayScore
-                                          .toString(),
+                                      k_m_b_generator(foodTodayScore),
                                       style: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w700),
@@ -280,8 +384,7 @@ class _ProfileOne extends State<ProfileOne> {
                                           fontSize: 12,
                                         )),
                                     Text(
-                                      getUserDetailModel.foodLastMonthScore
-                                          .toString(),
+                                      k_m_b_generator(foodLastMonthScore),
                                       style: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w700),
@@ -325,8 +428,7 @@ class _ProfileOne extends State<ProfileOne> {
                                           fontSize: 12,
                                         )),
                                     Text(
-                                      getUserDetailModel.travelTodayScore
-                                          .toString(),
+                                      k_m_b_generator(travelTodayScore),
                                       style: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w700),
@@ -346,8 +448,7 @@ class _ProfileOne extends State<ProfileOne> {
                                           fontSize: 12,
                                         )),
                                     Text(
-                                      getUserDetailModel.travelLastMonthScore
-                                          .toString(),
+                                      k_m_b_generator(travelLastMonthScore),
                                       style: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w700),
@@ -367,15 +468,5 @@ class _ProfileOne extends State<ProfileOne> {
               ],
             ),
     ));
-  }
-
-  getUserDetailSubmit() async {
-    var apis = ApiManager();
-    Response response = await apis.getUserDetailApi();
-    if (response.statusCode == 200) {
-      getUserDetailModel =
-          GetUserDetailModel.fromJson(jsonDecode(response.body));
-      setState(() {});
-    }
   }
 }

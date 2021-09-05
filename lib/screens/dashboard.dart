@@ -38,7 +38,6 @@ class _HomeState extends State<Home> {
   int travelLastMonthScore = 0;
 
   void initState() {
-    print('hello thereeeeee');
     super.initState();
     UserPreferences().getUser().then((value) {
       print('name: ${value.email}');
@@ -90,6 +89,20 @@ class _HomeState extends State<Home> {
     setState(() {
       currentIndex = index;
     });
+  }
+
+  String k_m_b_generator(num) {
+    if (num > 999 && num < 99999) {
+      return "${(num / 1000).toStringAsFixed(1)} K";
+    } else if (num > 99999 && num < 999999) {
+      return "${(num / 1000).toStringAsFixed(0)} K";
+    } else if (num > 999999 && num < 999999999) {
+      return "${(num / 1000000).toStringAsFixed(1)} M";
+    } else if (num > 999999999) {
+      return "${(num / 1000000000).toStringAsFixed(1)} B";
+    } else {
+      return num.toString();
+    }
   }
 
   @override
@@ -266,6 +279,39 @@ class _HomeState extends State<Home> {
                       ),
                     ),
                   ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 40.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          currentIndex = 3;
+                        });
+                        Navigator.of(context).pop();
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ProfileTwo()));
+                      },
+                      child: Row(
+                        children: [
+                          SvgPicture.asset('assets/images/rate_us.svg'),
+                          SizedBox(width: 8.0),
+                          Text(
+                            'Profile',
+                            style: TextStyle(
+                              fontFamily: 'Roboto',
+                              color: Colors.black,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   Expanded(
                     child: Align(
                       alignment: Alignment.bottomCenter,
@@ -318,7 +364,7 @@ class _HomeState extends State<Home> {
           children: [
             Container(
               padding: EdgeInsets.all(20.0),
-              height: MediaQuery.of(context).size.height * 0.33,
+              height: MediaQuery.of(context).size.height * 0.30,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
@@ -329,28 +375,18 @@ class _HomeState extends State<Home> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProfileTwo(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        flex: 3,
+                        child: Column(
+                          children: [
+                            Text('Welcome Back,'),
+                          ],
                         ),
-                      );
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          flex: 3,
-                          child: Column(
-                            children: [
-                              Text('Welcome Back,'),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                   Container(
                     margin: EdgeInsets.only(top: 10.0),
@@ -457,7 +493,7 @@ class _HomeState extends State<Home> {
                                   ),
                                 ),
                                 Text(
-                                  '${foodTodayScore + travelTodayScore}',
+                                  '${k_m_b_generator(foodTodayScore + travelTodayScore)}',
                                   style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.w700),
@@ -479,7 +515,7 @@ class _HomeState extends State<Home> {
                                   ),
                                 ),
                                 Text(
-                                  '${foodLastMonthScore + travelLastMonthScore}',
+                                  '${k_m_b_generator(foodLastMonthScore + travelLastMonthScore)}',
                                   style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.w700),
@@ -535,7 +571,7 @@ class _HomeState extends State<Home> {
                                     ),
                                   ),
                                   Text(
-                                    '${foodTodayScore}',
+                                    '${k_m_b_generator(foodTodayScore)}',
                                     style: TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.w700),
@@ -557,7 +593,7 @@ class _HomeState extends State<Home> {
                                     ),
                                   ),
                                   Text(
-                                    '${foodLastMonthScore}',
+                                    '${k_m_b_generator(foodLastMonthScore)}',
                                     style: TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.w700),
@@ -614,7 +650,7 @@ class _HomeState extends State<Home> {
                                     ),
                                   ),
                                   Text(
-                                    '${travelTodayScore}',
+                                    '${k_m_b_generator(travelTodayScore)}',
                                     style: TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.w700),
@@ -636,7 +672,7 @@ class _HomeState extends State<Home> {
                                     ),
                                   ),
                                   Text(
-                                    '${travelLastMonthScore}',
+                                    '${k_m_b_generator(travelLastMonthScore)}',
                                     style: TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.w700),

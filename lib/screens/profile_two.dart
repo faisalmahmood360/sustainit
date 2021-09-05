@@ -1,12 +1,11 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:foodapp/ApiManager/ApiManager.dart';
-import 'package:foodapp/models/ApiModels/GetCompeteUserModel.dart';
-import 'package:foodapp/models/ApiModels/GetuserDetailDashboardModel.dart';
-import 'package:foodapp/screens/compete.dart';
-import 'package:http/http.dart';
+import 'package:foodapp/screens/first_login.dart';
+import 'package:http/http.dart' as http;
+
+var storage = FlutterSecureStorage();
 
 class ProfileTwo extends StatefulWidget {
   @override
@@ -15,6 +14,18 @@ class ProfileTwo extends StatefulWidget {
 
 class _ProfileTwo extends State<ProfileTwo> {
   int currentIndex = 0;
+  String name;
+  String email;
+  String daily;
+  String monthly;
+  String description;
+  String dietType;
+  String dietSize;
+  String country;
+  int foodTodayScore = 0;
+  int foodLastMonthScore = 0;
+  int travelTodayScore = 0;
+  int travelLastMonthScore = 0;
 
   void changePage(int index) {
     setState(() {
@@ -22,14 +33,67 @@ class _ProfileTwo extends State<ProfileTwo> {
     });
   }
 
-  GetCompeteUserModel getCompeteUserModel;
-  GetUserDetailModel getUserDetailModel;
+  String k_m_b_generator(num) {
+    if (num > 999 && num < 99999) {
+      return "${(num / 1000).toStringAsFixed(1)} K";
+    } else if (num > 99999 && num < 999999) {
+      return "${(num / 1000).toStringAsFixed(0)} K";
+    } else if (num > 999999 && num < 999999999) {
+      return "${(num / 1000000).toStringAsFixed(1)} M";
+    } else if (num > 999999999) {
+      return "${(num / 1000000000).toStringAsFixed(1)} B";
+    } else {
+      return num.toString();
+    }
+  }
 
-  @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    getCompeteUserDetailSubmit();
+
+    Future<List<dynamic>> getProfileDetails() async {
+      var id = await storage.read(key: 'loginId');
+      final String apiUrl =
+          "http://sustianitnew.planlabsolutions.org/api/user_profile/${id}";
+      var result = await http.get(
+        apiUrl,
+        headers: {"content-type": "application/json"},
+      );
+      setState(() {
+        name = json.decode(result.body)['data']['name'];
+        email = json.decode(result.body)['data']['email'];
+        country = json.decode(result.body)['data']['country'];
+        dietType = json.decode(result.body)['data']['diet_type'];
+        dietSize = json.decode(result.body)['data']['diet_size'];
+        daily = json.decode(result.body)['message']['daily'];
+        monthly = json.decode(result.body)['message']['monthly'];
+        description = json.decode(result.body)['message']['description'];
+      });
+      return json.decode(result.body)['data'];
+    }
+
+    Future<List<dynamic>> getDashboardDetails() async {
+      var id = await storage.read(key: 'loginId');
+      final String apiUrl =
+          "http://sustianitnew.planlabsolutions.org/api/dashboard/user_dashboard_detail";
+      final Map<String, dynamic> formData = {"user_id": id};
+      var result = await http.post(
+        apiUrl,
+        headers: {"content-type": "application/json"},
+        body: json.encode(formData),
+      );
+      print('result ${json.decode(result.body)['data']}');
+      setState(() {
+        foodTodayScore = json.decode(result.body)['food_today_score'];
+        foodLastMonthScore = json.decode(result.body)['food_lastMonth_score'];
+        travelTodayScore = json.decode(result.body)['travel_today_score'];
+        travelLastMonthScore =
+            json.decode(result.body)['travel_lastMonth_score'];
+      });
+      return json.decode(result.body)['data'];
+    }
+
+    getProfileDetails();
+    getDashboardDetails();
   }
 
   @override
@@ -54,7 +118,7 @@ class _ProfileTwo extends State<ProfileTwo> {
         centerTitle: false,
         titleSpacing: 0,
       ),
-      body: getCompeteUserModel == null
+      body: name == null
           ? Center(child: CircularProgressIndicator())
           : Column(
               children: [
@@ -82,12 +146,12 @@ class _ProfileTwo extends State<ProfileTwo> {
                           children: [
                             Column(
                               children: [
-                                Text(getCompeteUserModel.data.name ?? '',
+                                Text(name ?? '',
                                     style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w700)),
                                 SizedBox(height: 2),
-                                Text(getCompeteUserModel.data.userName ?? '')
+                                Text(email ?? '')
                               ],
                             )
                           ],
@@ -103,7 +167,7 @@ class _ProfileTwo extends State<ProfileTwo> {
                                         fontSize: 18,
                                         fontWeight: FontWeight.w700)),
                                 SizedBox(height: 2),
-                                Text(getCompeteUserModel.data.dietType ?? '')
+                                Text(dietType ?? '')
                               ],
                             ),
                             Expanded(
@@ -114,7 +178,7 @@ class _ProfileTwo extends State<ProfileTwo> {
                                           fontSize: 18,
                                           fontWeight: FontWeight.w700)),
                                   SizedBox(height: 2),
-                                  Text(getCompeteUserModel.data.dietSize ?? '')
+                                  Text(dietSize ?? '')
                                 ],
                               ),
                             ),
@@ -126,13 +190,27 @@ class _ProfileTwo extends State<ProfileTwo> {
                                           fontSize: 18,
                                           fontWeight: FontWeight.w700)),
                                   SizedBox(height: 2),
-                                  getCompeteUserModel.data.rank == null
-                                      ? Text('No Rank')
-                                      : Text(getCompeteUserModel.data.rank)
+                                  Text('No Rank')
                                 ],
                               ),
                             ),
-                            SvgPicture.asset('assets/images/share.svg')
+                            SizedBox(
+                                width: 100,
+                                height: 50,
+                                child: RaisedButton(
+                                    textColor: Colors.white,
+                                    color: Color(0xff50E569),
+                                    child: Text('Update'),
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => FirstLogin()),
+                                      );
+                                    },
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            new BorderRadius.circular(10.0)))),
                           ],
                         ),
                         SizedBox(height: 5),
@@ -147,7 +225,7 @@ class _ProfileTwo extends State<ProfileTwo> {
                                         fontSize: 18,
                                         fontWeight: FontWeight.w700)),
                                 SizedBox(height: 2),
-                                Text(getCompeteUserModel.data.email ?? '')
+                                Text(email ?? '')
                               ],
                             )
                           ],
@@ -164,7 +242,7 @@ class _ProfileTwo extends State<ProfileTwo> {
                                         fontSize: 18,
                                         fontWeight: FontWeight.w700)),
                                 SizedBox(height: 2),
-                                Text(getCompeteUserModel.data.country ?? '')
+                                Text(country ?? '')
                               ],
                             )
                           ],
@@ -210,7 +288,10 @@ class _ProfileTwo extends State<ProfileTwo> {
                                           fontSize: 12,
                                         )),
                                     Text(
-                                      '${getUserDetailModel.totalScore} ?? 0',
+                                      k_m_b_generator(foodTodayScore +
+                                          foodLastMonthScore +
+                                          travelTodayScore +
+                                          travelLastMonthScore),
                                       style: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w700),
@@ -230,7 +311,8 @@ class _ProfileTwo extends State<ProfileTwo> {
                                           fontSize: 12,
                                         )),
                                     Text(
-                                      '${getUserDetailModel.foodTodayScore} ?? 0',
+                                      k_m_b_generator(
+                                          foodTodayScore + foodLastMonthScore),
                                       style: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w700),
@@ -250,7 +332,8 @@ class _ProfileTwo extends State<ProfileTwo> {
                                           fontSize: 12,
                                         )),
                                     Text(
-                                      '${getUserDetailModel.travelTodayScore} ?? 0',
+                                      k_m_b_generator(travelTodayScore +
+                                          travelLastMonthScore),
                                       style: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w700),
@@ -272,7 +355,7 @@ class _ProfileTwo extends State<ProfileTwo> {
                             borderRadius: BorderRadius.circular(15.0)),
                         child: Column(
                           children: [
-                            Text(getCompeteUserModel.message.description,
+                            Text(description,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(color: Colors.white)),
                             SizedBox(height: 10.0),
@@ -291,8 +374,7 @@ class _ProfileTwo extends State<ProfileTwo> {
                                               style: TextStyle(
                                                   color: Colors.white)),
                                           SizedBox(height: 5),
-                                          Text(
-                                              getCompeteUserModel.message.daily,
+                                          Text(daily,
                                               style: TextStyle(
                                                   color: Colors.white)),
                                         ],
@@ -317,9 +399,7 @@ class _ProfileTwo extends State<ProfileTwo> {
                                               style: TextStyle(
                                                   color: Colors.white)),
                                           SizedBox(height: 5),
-                                          Text(
-                                              getCompeteUserModel
-                                                  .message.monthly,
+                                          Text(monthly,
                                               style: TextStyle(
                                                   color: Colors.white)),
                                         ],
@@ -342,26 +422,5 @@ class _ProfileTwo extends State<ProfileTwo> {
               ],
             ),
     ));
-  }
-
-  getCompeteUserDetailSubmit() async {
-    print('andr');
-    var apis = ApiManager();
-    Response response = await apis.getCompeteUserDetailApi();
-    if (response.statusCode == 200) {
-      getCompeteUserModel =
-          GetCompeteUserModel.fromJson(jsonDecode(response.body));
-      setState(() {});
-    }
-  }
-
-  getUserDetailSubmit() async {
-    var apis = ApiManager();
-    Response response = await apis.getUserDetailApi();
-    if (response.statusCode == 200) {
-      getUserDetailModel =
-          GetUserDetailModel.fromJson(jsonDecode(response.body));
-      setState(() {});
-    }
   }
 }

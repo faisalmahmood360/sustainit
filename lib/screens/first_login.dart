@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:foodapp/utils/shared_preference.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -23,6 +24,7 @@ class _FirstLoginState extends State<FirstLogin> {
     var updateUserDiet = () async {
       EasyLoading.show(status: 'Diet updating...');
       var id = await storage.read(key: 'loginId');
+      UserPreferences().saveHabbit(_dietType.toString());
 
       final String addMealUrl =
           "http://sustianitnew.planlabsolutions.org/api/food/update_user_diet";

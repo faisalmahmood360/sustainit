@@ -1,6 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:foodapp/ApiManager/ApiManager.dart';
+import 'package:foodapp/models/ApiModels/LeaderBoardModel.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class Compete extends StatefulWidget {
   @override
@@ -8,15 +14,40 @@ class Compete extends StatefulWidget {
 }
 
 class _CompeteState extends State<Compete> {
+  int selectedIndex = 0;
+  int selectedTab = 1;
+  List<dynamic> leaders = [];
+
+  Future<Map<String, dynamic>> fetchLeaders(date, type) async {
+    String apiUrl =
+        'http://sustianitnew.planlabsolutions.org/api/compete/get_compete_user_detail';
+    final Map<String, dynamic> formData = {
+      "record_for": date,
+      "diet_type": type
+    };
+    var result = await http.post(
+      apiUrl,
+      headers: {"content-type": "application/json"},
+      body: json.encode(formData),
+    );
+    print('responseee: ${json.decode(result.body)["1st"]}');
+    setState(() {
+      leaders = json.decode(result.body)["list"];
+    });
+    return json.decode(result.body)['list'];
+  }
+
   @override
   void initState() {
     super.initState();
     EasyLoading.show(status: 'Loading...');
-
+    fetchLeaders('lastMonth', '1');
     Future.delayed(const Duration(seconds: 2), () {
       EasyLoading.dismiss();
     });
   }
+
+  LeaderBoardModel leaderBoardModel;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +78,12 @@ class _CompeteState extends State<Compete> {
                 centerTitle: false,
                 titleSpacing: 0,
                 bottom: TabBar(
+                    onTap: (index) {
+                      setState(() {
+                        selectedTab = index + 1;
+                      });
+                      fetchLeaders('lastMonth', '${index + 1}');
+                    },
                     unselectedLabelColor: Colors.grey,
                     indicator: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
@@ -69,504 +106,50 @@ class _CompeteState extends State<Compete> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           SvgPicture.asset('assets/images/today.svg'),
-                          Text(
-                            ' Today',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w700),
+                          GestureDetector(
+                            onTap: () {
+                              selectedIndex = 0;
+                              fetchLeaders('today', '${selectedTab}');
+                              setState(() {});
+                            },
+                            child: Text(
+                              ' Today',
+                              style: TextStyle(
+                                  color: selectedIndex == 0
+                                      ? Colors.black
+                                      : Colors.grey,
+                                  fontWeight: selectedIndex == 0
+                                      ? FontWeight.bold
+                                      : FontWeight.normal),
+                            ),
                           ),
                           SizedBox(width: 20.0),
                           SvgPicture.asset('assets/images/30_days.svg'),
-                          Text(
-                            ' 30 Days',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w700),
+                          GestureDetector(
+                            onTap: () {
+                              selectedIndex = 1;
+                              fetchLeaders('lastMonth', '${selectedTab}');
+                              setState(() {});
+                            },
+                            child: Text(
+                              ' 30 Days',
+                              style: TextStyle(
+                                  color: selectedIndex == 1
+                                      ? Colors.black
+                                      : Colors.grey,
+                                  fontWeight: selectedIndex == 1
+                                      ? FontWeight.bold
+                                      : FontWeight.normal),
+                            ),
                           )
                         ],
                       ),
                       SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Flexible(
-                            child: Column(
-                              children: [
-                                Text(
-                                  '2nd',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                                SizedBox(height: 5),
-                                Image.asset('assets/images/persons/first.png'),
-                                SizedBox(height: 5),
-                                Text('Horace',
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700)),
-                                Row(
-                                  children: [
-                                    SvgPicture.asset(
-                                        'assets/images/persons/flag_1.svg'),
-                                    SizedBox(width: 3),
-                                    Text('@horaceperry')
-                                  ],
-                                ),
-                                SizedBox(height: 10),
-                                Center(
-                                  child: Column(
-                                    children: [
-                                      Text('2.3K',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Text('Score')
-                                    ],
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                          Flexible(
-                            child: Container(
-                              margin: EdgeInsets.only(bottom: 18.0),
-                              child: Column(children: [
-                                Text(
-                                  '1st',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                                SizedBox(height: 5),
-                                Image.asset('assets/images/persons/second.png'),
-                                SizedBox(height: 5),
-                                Text('Kevin',
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700)),
-                                Row(
-                                  children: [
-                                    SvgPicture.asset(
-                                        'assets/images/persons/flag_2.svg'),
-                                    SizedBox(width: 3),
-                                    Text('@kevinbryne')
-                                  ],
-                                ),
-                                SizedBox(height: 10),
-                                Center(
-                                    child: Column(
-                                  children: [
-                                    Text('2.2K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('Score')
-                                  ],
-                                ))
-                              ]),
-                            ),
-                          ),
-                          Flexible(
-                            child: Column(children: [
-                              Text(
-                                '2nd',
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.w600),
-                              ),
-                              SizedBox(height: 5),
-                              Image.asset('assets/images/persons/third.png'),
-                              SizedBox(height: 5),
-                              Text('Lorna',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700)),
-                              Row(
-                                children: [
-                                  SvgPicture.asset(
-                                      'assets/images/persons/flag_3.svg'),
-                                  SizedBox(width: 3),
-                                  Text('lornaratliff')
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              Center(
-                                  child: Column(
-                                children: [
-                                  Text('2.4K',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w700)),
-                                  Text('Score')
-                                ],
-                              ))
-                            ]),
-                          )
-                        ],
-                      ),
-                      Expanded(
-                        child: ListView(
-                          children: <Widget>[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image1.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_1.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('7.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image2.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_2.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('8.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image3.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_3.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('4.51K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image1.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_2.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('8.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image2.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_3.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('4.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image3.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_1.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('2.61K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image1.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_3.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('5.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image2.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_1.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('5.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image3.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_2.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('2.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
+                      leaders == null
+                          ? Center(
+                              child: CircularProgressIndicator(),
                             )
-                          ],
-                        ),
-                      ),
+                          : selectedFun(),
                     ],
                   ),
                 ),
@@ -580,500 +163,50 @@ class _CompeteState extends State<Compete> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           SvgPicture.asset('assets/images/today.svg'),
-                          Text(
-                            ' Today',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w700),
+                          GestureDetector(
+                            onTap: () {
+                              selectedIndex = 0;
+                              fetchLeaders('today', '${selectedTab}');
+                              setState(() {});
+                            },
+                            child: Text(
+                              ' Today',
+                              style: TextStyle(
+                                  color: selectedIndex == 0
+                                      ? Colors.black
+                                      : Colors.grey,
+                                  fontWeight: selectedIndex == 0
+                                      ? FontWeight.bold
+                                      : FontWeight.normal),
+                            ),
                           ),
                           SizedBox(width: 20.0),
                           SvgPicture.asset('assets/images/30_days.svg'),
-                          Text(
-                            ' 30 Days',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w700),
+                          GestureDetector(
+                            onTap: () {
+                              selectedIndex = 1;
+                              fetchLeaders('lastMonth', '${selectedTab}');
+                              setState(() {});
+                            },
+                            child: Text(
+                              ' 30 Days',
+                              style: TextStyle(
+                                  color: selectedIndex == 1
+                                      ? Colors.black
+                                      : Colors.grey,
+                                  fontWeight: selectedIndex == 1
+                                      ? FontWeight.bold
+                                      : FontWeight.normal),
+                            ),
                           )
                         ],
                       ),
                       SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Flexible(
-                            child: Column(children: [
-                              Text(
-                                '2nd',
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.w600),
-                              ),
-                              SizedBox(height: 5),
-                              Image.asset('assets/images/persons/first.png'),
-                              SizedBox(height: 5),
-                              Text('Horace',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700)),
-                              Row(
-                                children: [
-                                  SvgPicture.asset(
-                                      'assets/images/persons/flag_1.svg'),
-                                  SizedBox(width: 3),
-                                  Text('@horaceperry')
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              Center(
-                                  child: Column(
-                                children: [
-                                  Text('2.3K',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w700)),
-                                  Text('Score')
-                                ],
-                              ))
-                            ]),
-                          ),
-                          Flexible(
-                            child: Container(
-                              margin: EdgeInsets.only(bottom: 18.0),
-                              child: Column(children: [
-                                Text(
-                                  '1st',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                                SizedBox(height: 5),
-                                Image.asset('assets/images/persons/second.png'),
-                                SizedBox(height: 5),
-                                Text('Kevin',
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700)),
-                                Row(
-                                  children: [
-                                    SvgPicture.asset(
-                                        'assets/images/persons/flag_2.svg'),
-                                    SizedBox(width: 3),
-                                    Text('@kevinbryne')
-                                  ],
-                                ),
-                                SizedBox(height: 10),
-                                Center(
-                                    child: Column(
-                                  children: [
-                                    Text('2.2K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('Score')
-                                  ],
-                                ))
-                              ]),
-                            ),
-                          ),
-                          Flexible(
-                            child: Column(children: [
-                              Text(
-                                '2nd',
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.w600),
-                              ),
-                              SizedBox(height: 5),
-                              Image.asset('assets/images/persons/third.png'),
-                              SizedBox(height: 5),
-                              Text('Lorna',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700)),
-                              Row(
-                                children: [
-                                  SvgPicture.asset(
-                                      'assets/images/persons/flag_3.svg'),
-                                  SizedBox(width: 3),
-                                  Text('lornaratliff')
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              Center(
-                                  child: Column(
-                                children: [
-                                  Text('2.4K',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w700)),
-                                  Text('Score')
-                                ],
-                              ))
-                            ]),
-                          )
-                        ],
-                      ),
-                      Expanded(
-                        child: ListView(
-                          children: <Widget>[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image1.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_1.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('7.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image2.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_2.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('8.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image3.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_3.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('4.51K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image1.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_2.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('8.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image2.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_3.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('4.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image3.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_1.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('2.61K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image1.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_3.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('5.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image2.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_1.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('5.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image3.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_2.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('2.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
+                      leaders == null
+                          ? Center(
+                              child: CircularProgressIndicator(),
                             )
-                          ],
-                        ),
-                      ),
+                          : selectedFun(),
                     ],
                   ),
                 ),
@@ -1087,500 +220,50 @@ class _CompeteState extends State<Compete> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           SvgPicture.asset('assets/images/today.svg'),
-                          Text(
-                            ' Today',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w700),
+                          GestureDetector(
+                            onTap: () {
+                              selectedIndex = 0;
+                              fetchLeaders('today', '${selectedTab}');
+                              setState(() {});
+                            },
+                            child: Text(
+                              ' Today',
+                              style: TextStyle(
+                                  color: selectedIndex == 0
+                                      ? Colors.black
+                                      : Colors.grey,
+                                  fontWeight: selectedIndex == 0
+                                      ? FontWeight.bold
+                                      : FontWeight.normal),
+                            ),
                           ),
                           SizedBox(width: 20.0),
                           SvgPicture.asset('assets/images/30_days.svg'),
-                          Text(
-                            ' 30 Days',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w700),
+                          GestureDetector(
+                            onTap: () {
+                              selectedIndex = 1;
+                              fetchLeaders('lastMonth', '${selectedTab}');
+                              setState(() {});
+                            },
+                            child: Text(
+                              ' 30 Days',
+                              style: TextStyle(
+                                  color: selectedIndex == 1
+                                      ? Colors.black
+                                      : Colors.grey,
+                                  fontWeight: selectedIndex == 1
+                                      ? FontWeight.bold
+                                      : FontWeight.normal),
+                            ),
                           )
                         ],
                       ),
                       SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Flexible(
-                            child: Column(children: [
-                              Text(
-                                '2nd',
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.w600),
-                              ),
-                              SizedBox(height: 5),
-                              Image.asset('assets/images/persons/first.png'),
-                              SizedBox(height: 5),
-                              Text('Horace',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700)),
-                              Row(
-                                children: [
-                                  SvgPicture.asset(
-                                      'assets/images/persons/flag_1.svg'),
-                                  SizedBox(width: 3),
-                                  Text('@horaceperry')
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              Center(
-                                  child: Column(
-                                children: [
-                                  Text('2.3K',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w700)),
-                                  Text('Score')
-                                ],
-                              ))
-                            ]),
-                          ),
-                          Flexible(
-                            child: Container(
-                              margin: EdgeInsets.only(bottom: 18.0),
-                              child: Column(children: [
-                                Text(
-                                  '1st',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                                SizedBox(height: 5),
-                                Image.asset('assets/images/persons/second.png'),
-                                SizedBox(height: 5),
-                                Text('Kevin',
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700)),
-                                Row(
-                                  children: [
-                                    SvgPicture.asset(
-                                        'assets/images/persons/flag_2.svg'),
-                                    SizedBox(width: 3),
-                                    Text('@kevinbryne')
-                                  ],
-                                ),
-                                SizedBox(height: 10),
-                                Center(
-                                    child: Column(
-                                  children: [
-                                    Text('2.2K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('Score')
-                                  ],
-                                ))
-                              ]),
-                            ),
-                          ),
-                          Flexible(
-                            child: Column(children: [
-                              Text(
-                                '2nd',
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.w600),
-                              ),
-                              SizedBox(height: 5),
-                              Image.asset('assets/images/persons/third.png'),
-                              SizedBox(height: 5),
-                              Text('Lorna',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700)),
-                              Row(
-                                children: [
-                                  SvgPicture.asset(
-                                      'assets/images/persons/flag_3.svg'),
-                                  SizedBox(width: 3),
-                                  Text('lornaratliff')
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              Center(
-                                  child: Column(
-                                children: [
-                                  Text('2.4K',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w700)),
-                                  Text('Score')
-                                ],
-                              ))
-                            ]),
-                          )
-                        ],
-                      ),
-                      Expanded(
-                        child: ListView(
-                          children: <Widget>[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image1.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_1.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('7.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image2.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_2.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('8.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image3.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_3.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('4.51K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image1.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_2.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('8.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image2.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_3.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('4.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image3.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_1.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('2.61K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image1.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_3.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('5.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image2.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_1.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('5.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(children: [
-                                  Image.asset(
-                                      'assets/images/persons/image3.png'),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Joyce',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700)),
-                                      Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                              'assets/images/persons/flag_2.svg'),
-                                          SizedBox(width: 3),
-                                          Text('@horaceperry')
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text('2.1K',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700)),
-                                    Text('score')
-                                  ],
-                                ),
-                              ],
+                      leaders == null
+                          ? Center(
+                              child: CircularProgressIndicator(),
                             )
-                          ],
-                        ),
-                      ),
+                          : selectedFun(),
                     ],
                   ),
                 ),
@@ -1590,5 +273,95 @@ class _CompeteState extends State<Compete> {
         ),
       ),
     );
+  }
+
+  vegetarianCard(userId, img, name, userName, score) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(children: [
+          Container(
+            height: 48,
+            width: 48,
+            child: img != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(10.0),
+                    child: Image.network(
+                        'https://sustianitnew.planlabsolutions.org/uploads/${userId}/${img}',
+                        height: 48,
+                        width: 48,
+                        fit: BoxFit.fill))
+                : ClipRRect(
+                    borderRadius: BorderRadius.circular(10.0),
+                    child: Image.asset('assets/images/dummy.png',
+                        height: 48, width: 48, fit: BoxFit.fill)),
+          ),
+          SizedBox(width: 10),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(toBeginningOfSentenceCase(name) ?? '',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+              Row(
+                children: [
+                  // SvgPicture.asset(
+                  //     'assets/images/persons/flag_2.svg'),
+                  SizedBox(width: 3),
+                  Text('@${userName}' ?? '')
+                ],
+              ),
+            ],
+          ),
+        ]),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(score ?? '0',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            Text('score')
+          ],
+        ),
+        SizedBox(height: 65.0),
+      ],
+    );
+  }
+
+  selectedFun() {
+    if (selectedIndex == 0) {
+      return Expanded(
+        child: Container(
+          height: 100,
+          child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: leaders.length,
+              itemBuilder: (context, index) {
+                return vegetarianCard(
+                    leaders[index]['user_id'],
+                    leaders[index]['image'],
+                    leaders[index]['name'],
+                    leaders[index]['user_name'],
+                    leaders[index]['score'].toString());
+              }),
+        ),
+      );
+    } else {
+      return Expanded(
+        child: Container(
+          height: 100,
+          child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: leaders.length,
+              itemBuilder: (context, index) {
+                return vegetarianCard(
+                    leaders[index]['user_id'],
+                    leaders[index]['image'],
+                    leaders[index]['name'],
+                    leaders[index]['user_name'],
+                    leaders[index]['score'].toString());
+              }),
+        ),
+      );
+    }
   }
 }

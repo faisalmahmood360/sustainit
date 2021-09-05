@@ -1,14 +1,12 @@
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:foodapp/utils/shared_preference.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:foodapp/screens/dashboard.dart';
-import 'package:foodapp/providers/auth.dart';
-import 'package:provider/provider.dart';
 
 var storage = FlutterSecureStorage();
 
@@ -18,23 +16,39 @@ class AddFood extends StatefulWidget {
 }
 
 class _AddFoodState extends State<AddFood> {
+  String habbit = '';
   List<int> _selectedFoods = [];
 
-  final String apiUrl =
-      "http://sustianitnew.planlabsolutions.org/api/food/specific_food_list";
-  final Map<String, dynamic> formData = {'habbites': '1'};
+  @override
+  void initState() {
+    super.initState();
+    UserPreferences().getHabbit().then((value) {
+      setState(() {
+        habbit = value;
+      });
+    });
+    EasyLoading.show(status: 'Loading...');
 
-  Future<List<dynamic>> fetchUsers() async {
-    var result = await http.post(
-      apiUrl,
-      headers: {"content-type": "application/json"},
-      body: json.encode(formData),
-    );
-    return json.decode(result.body)['data'];
+    Future.delayed(const Duration(seconds: 1), () {
+      EasyLoading.dismiss();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final String apiUrl =
+        "http://sustianitnew.planlabsolutions.org/api/food/specific_food_list";
+    final Map<String, dynamic> formData = {'habbites': habbit};
+
+    Future<List<dynamic>> fetchUsers() async {
+      var result = await http.post(
+        apiUrl,
+        headers: {"content-type": "application/json"},
+        body: json.encode(formData),
+      );
+      return json.decode(result.body)['data'];
+    }
+
     var addFood = () async {
       var id = await storage.read(key: 'loginId');
       if (_selectedFoods.length <= 0) {
@@ -189,6 +203,7 @@ class _AddFoodState extends State<AddFood> {
               },
             ),
           ),
+          SizedBox(height: 100.0),
           Positioned(
               bottom: 40,
               left: 10,

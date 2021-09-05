@@ -74,4 +74,16 @@ class UserPreferences {
     return email;
   }
 
+  Future<bool> saveHabbit(habbit) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("habbit", habbit);
+    print(habbit);
+    return prefs.commit();
+  }
+
+  Future<String> getHabbit() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String habbit = prefs.getString("habbit");
+    return habbit;
+  }
 }
