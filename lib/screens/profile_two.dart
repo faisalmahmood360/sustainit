@@ -1,9 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:foodapp/screens/first_login.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 
 var storage = FlutterSecureStorage();
 
@@ -16,6 +19,7 @@ class _ProfileTwo extends State<ProfileTwo> {
   int currentIndex = 0;
   String name;
   String email;
+  String image;
   String daily;
   String monthly;
   String description;
@@ -26,6 +30,21 @@ class _ProfileTwo extends State<ProfileTwo> {
   int foodLastMonthScore = 0;
   int travelTodayScore = 0;
   int travelLastMonthScore = 0;
+
+  File imageFile;
+
+  _getFromGallery() async {
+    PickedFile pickedFile = await ImagePicker().getImage(
+      source: ImageSource.gallery,
+      maxWidth: 1800,
+      maxHeight: 1800,
+    );
+    if (pickedFile != null) {
+      setState(() {
+        imageFile = File(pickedFile.path);
+      });
+    }
+  }
 
   void changePage(int index) {
     setState(() {
@@ -61,6 +80,7 @@ class _ProfileTwo extends State<ProfileTwo> {
       setState(() {
         name = json.decode(result.body)['data']['name'];
         email = json.decode(result.body)['data']['email'];
+        image = json.decode(result.body)['data']['image'];
         country = json.decode(result.body)['data']['country'];
         dietType = json.decode(result.body)['data']['diet_type'];
         dietSize = json.decode(result.body)['data']['diet_size'];
@@ -133,13 +153,43 @@ class _ProfileTwo extends State<ProfileTwo> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Flexible(
-                                child: Image.asset('assets/images/dummy.png',
-                                    height: 50)),
-                          ],
+                        Container(
+                          decoration: new BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20.0)),
+                          height: 125,
+                          width: 125,
+                          child: Stack(
+                            children: <Widget>[
+                              image != null
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                      child: Image.network(
+                                          'https://sustianitnew.planlabsolutions.org/uploads/${image}',
+                                          height: 125,
+                                          width: 125,
+                                          fit: BoxFit.fill),
+                                    )
+                                  : ClipRRect(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                      child: Image.asset(
+                                          'assets/images/dummy.png',
+                                          height: 125,
+                                          width: 125,
+                                          fit: BoxFit.fill),
+                                    ),
+                              Positioned(
+                                bottom: 5,
+                                right:
+                                    1, //give the values according to your requirement
+                                child: GestureDetector(
+                                  onTap: () => _getFromGallery(),
+                                  child: SvgPicture.asset(
+                                      'assets/images/upload.svg'),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -156,19 +206,21 @@ class _ProfileTwo extends State<ProfileTwo> {
                             )
                           ],
                         ),
-                        SizedBox(height: 5),
+                        SizedBox(height: 10.0),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            Column(
-                              children: [
-                                Text('Type',
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700)),
-                                SizedBox(height: 2),
-                                Text(dietType ?? '')
-                              ],
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  Text('Type',
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w700)),
+                                  SizedBox(height: 2),
+                                  Text(dietType ?? '')
+                                ],
+                              ),
                             ),
                             Expanded(
                               child: Column(
@@ -179,18 +231,6 @@ class _ProfileTwo extends State<ProfileTwo> {
                                           fontWeight: FontWeight.w700)),
                                   SizedBox(height: 2),
                                   Text(dietSize ?? '')
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              child: Column(
-                                children: [
-                                  Text('Rank',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w700)),
-                                  SizedBox(height: 2),
-                                  Text('No Rank')
                                 ],
                               ),
                             ),

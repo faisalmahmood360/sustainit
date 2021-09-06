@@ -19,6 +19,27 @@ class _FirstLoginState extends State<FirstLogin> {
   int _dietType = 1;
   int _dietSize = 2;
 
+  void initState() {
+    super.initState();
+
+    Future<List<dynamic>> getProfileDetails() async {
+      var id = await storage.read(key: 'loginId');
+      final String apiUrl =
+          "http://sustianitnew.planlabsolutions.org/api/user_profile/${id}";
+      var result = await http.get(
+        apiUrl,
+        headers: {"content-type": "application/json"},
+      );
+      setState(() {
+        _dietType = int.parse(json.decode(result.body)['data']['diet_type_id']);
+        _dietSize = int.parse(json.decode(result.body)['data']['diet_size_id']);
+      });
+      return json.decode(result.body)['data'];
+    }
+
+    getProfileDetails();
+  }
+
   @override
   Widget build(BuildContext context) {
     var updateUserDiet = () async {
@@ -54,25 +75,6 @@ class _FirstLoginState extends State<FirstLogin> {
             top: 140.0, left: 20.0, right: 20.0, bottom: 20.0),
         child: Column(
           children: [
-            // Row(
-            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //   children: [
-            //     Flexible(
-            //       child: Column(
-            //         children: [
-            //           Text('Welcome Back,'),
-            //           Text('Ahmad',
-            //               style: TextStyle(
-            //                   fontSize: 36, fontWeight: FontWeight.w700)),
-            //         ],
-            //       ),
-            //     ),
-            //     Flexible(
-            //       child: Image.asset('assets/images/profile.png'),
-            //     ),
-            //   ],
-            // ),
-            // SizedBox(height: 40.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [Text('Please select your eating habit')],

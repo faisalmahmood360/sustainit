@@ -23,6 +23,7 @@ class _LeaderBoardState extends State<LeaderBoard> {
   Map<String, dynamic> thirdLeader = {};
 
   Future<Map<String, dynamic>> fetchLeaders(date, type) async {
+    EasyLoading.show(status: 'Loading...');
     String apiUrl =
         'http://sustianitnew.planlabsolutions.org/api/leaderboard/get_user_leaderboard';
     final Map<String, dynamic> formData = {
@@ -40,6 +41,9 @@ class _LeaderBoardState extends State<LeaderBoard> {
       firstLeader = json.decode(result.body)["1st"];
       secondLeader = json.decode(result.body)["2nd"];
       thirdLeader = json.decode(result.body)["3rd"];
+    });
+    Future.delayed(const Duration(seconds: 2), () {
+      EasyLoading.dismiss();
     });
     return json.decode(result.body)['list'];
   }
@@ -201,7 +205,7 @@ class _LeaderBoardState extends State<LeaderBoard> {
                                             children: [
                                               // SvgPicture.asset(
                                               //     'assets/images/persons/flag_1.svg'),
-                                              // SizedBox(width: 20),
+                                              SizedBox(width: 20),
                                               Text(
                                                   '@${secondLeader['user']['user_name']}')
                                             ],
@@ -220,7 +224,11 @@ class _LeaderBoardState extends State<LeaderBoard> {
                                           ))
                                         ]),
                                       )
-                                    : Text(''),
+                                    : Flexible(
+                                        child: Container(
+                                        height: 198,
+                                        width: 108,
+                                      )),
                                 firstLeader.isNotEmpty
                                     ? Flexible(
                                         child: Column(children: [
@@ -261,7 +269,7 @@ class _LeaderBoardState extends State<LeaderBoard> {
                                             children: [
                                               // SvgPicture.asset(
                                               //     'assets/images/persons/flag_1.svg'),
-                                              // SizedBox(width: 20),
+                                              SizedBox(width: 20),
                                               Text(
                                                   '@${firstLeader['user']['user_name']}')
                                             ],
@@ -280,7 +288,11 @@ class _LeaderBoardState extends State<LeaderBoard> {
                                           ))
                                         ]),
                                       )
-                                    : Text(''),
+                                    : Flexible(
+                                        child: Container(
+                                        height: 198,
+                                        width: 108,
+                                      )),
                                 thirdLeader.isNotEmpty
                                     ? Flexible(
                                         child: Column(children: [
@@ -322,7 +334,7 @@ class _LeaderBoardState extends State<LeaderBoard> {
                                             children: [
                                               // SvgPicture.asset(
                                               //     'assets/images/persons/flag_1.svg'),
-                                              // SizedBox(width: 20),
+                                              SizedBox(width: 20),
                                               Text(
                                                   '@${thirdLeader['user']['user_name']}')
                                             ],
@@ -341,10 +353,11 @@ class _LeaderBoardState extends State<LeaderBoard> {
                                           ))
                                         ]),
                                       )
-                                    : Container(
-                                        height: 120,
-                                        width: 120,
-                                      ),
+                                    : Flexible(
+                                        child: Container(
+                                        height: 198,
+                                        width: 108,
+                                      )),
                               ],
                             ),
                       selectedFun(),
@@ -466,7 +479,11 @@ class _LeaderBoardState extends State<LeaderBoard> {
                                           ))
                                         ]),
                                       )
-                                    : Text(''),
+                                    : Flexible(
+                                        child: Container(
+                                        height: 198,
+                                        width: 108,
+                                      )),
                                 firstLeader.isNotEmpty
                                     ? Flexible(
                                         child: Column(children: [
@@ -526,7 +543,11 @@ class _LeaderBoardState extends State<LeaderBoard> {
                                           ))
                                         ]),
                                       )
-                                    : Text(''),
+                                    : Flexible(
+                                        child: Container(
+                                        height: 198,
+                                        width: 108,
+                                      )),
                                 thirdLeader.isNotEmpty
                                     ? Flexible(
                                         child: Column(children: [
@@ -587,10 +608,11 @@ class _LeaderBoardState extends State<LeaderBoard> {
                                           ))
                                         ]),
                                       )
-                                    : Container(
-                                        height: 120,
-                                        width: 120,
-                                      ),
+                                    : Flexible(
+                                        child: Container(
+                                        height: 198,
+                                        width: 108,
+                                      )),
                               ],
                             ),
                       selectedFun(),
@@ -712,7 +734,11 @@ class _LeaderBoardState extends State<LeaderBoard> {
                                           ))
                                         ]),
                                       )
-                                    : Text(''),
+                                    : Flexible(
+                                        child: Container(
+                                        height: 198,
+                                        width: 108,
+                                      )),
                                 firstLeader.isNotEmpty
                                     ? Flexible(
                                         child: Column(children: [
@@ -772,7 +798,11 @@ class _LeaderBoardState extends State<LeaderBoard> {
                                           ))
                                         ]),
                                       )
-                                    : Text(''),
+                                    : Flexible(
+                                        child: Container(
+                                        height: 198,
+                                        width: 108,
+                                      )),
                                 thirdLeader.isNotEmpty
                                     ? Flexible(
                                         child: Column(children: [
@@ -833,11 +863,11 @@ class _LeaderBoardState extends State<LeaderBoard> {
                                           ))
                                         ]),
                                       )
-                                    : Container(
-                                        height: 120,
-                                        width: 120,
-                                      ),
-                                SizedBox(height: 50.0)
+                                    : Flexible(
+                                        child: Container(
+                                        height: 198,
+                                        width: 108,
+                                      )),
                               ],
                             ),
                       selectedFun(),

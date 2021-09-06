@@ -66,11 +66,11 @@ class _ProfileOne extends State<ProfileOne> {
         });
       } else if (value == "1") {
         setState(() {
-          habbit = "Vegan";
+          habbit = "Vegon";
         });
       } else {
         setState(() {
-          habbit = "Omnivore";
+          habbit = "Omnivores";
         });
       }
     });
@@ -85,6 +85,7 @@ class _ProfileOne extends State<ProfileOne> {
       setState(() {
         name = json.decode(result.body)['data']['name'];
         email = json.decode(result.body)['data']['email'];
+        image = json.decode(result.body)['data']['image'];
         dietType = json.decode(result.body)['data']['diet_type'];
       });
       return json.decode(result.body)['data'];
@@ -182,16 +183,28 @@ class _ProfileOne extends State<ProfileOne> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Flexible(
-                              child: image == null
-                                  ? Image.asset('assets/images/dummy.png')
-                                  : Image.network(
-                                      'https://sustianitnew.planlabsolutions.org/uploads/${widget.userId}/${image}'),
-                            ),
-                          ],
+                        Container(
+                          decoration: new BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20.0)),
+                          height: 125,
+                          width: 125,
+                          child: image != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  child: Image.network(
+                                      'https://sustianitnew.planlabsolutions.org/uploads/${image}',
+                                      height: 125,
+                                      width: 125,
+                                      fit: BoxFit.fill),
+                                )
+                              : ClipRRect(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  child: Image.asset('assets/images/dummy.png',
+                                      height: 125,
+                                      width: 125,
+                                      fit: BoxFit.fill),
+                                ),
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,

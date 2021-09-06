@@ -32,6 +32,7 @@ dependencies:
   pin_code_fields: ^7.2.0
   date_picker_timeline: ^1.2.3
   intl: ^0.17.0
+  image_picker: ^0.6.7+7
 #  syncfusion_flutter_datepicker: ^19.2.49
 #  date_range_picker: ^1.0.5
   pie_chart: ^5.0.0

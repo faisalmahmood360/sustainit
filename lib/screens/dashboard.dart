@@ -161,6 +161,39 @@ class _HomeState extends State<Home> {
                     padding: const EdgeInsets.only(left: 40.0),
                     child: GestureDetector(
                       onTap: () {
+                        setState(() {
+                          currentIndex = 3;
+                        });
+                        Navigator.of(context).pop();
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ProfileTwo()));
+                      },
+                      child: Row(
+                        children: [
+                          SvgPicture.asset('assets/images/rate_us.svg'),
+                          SizedBox(width: 8.0),
+                          Text(
+                            'Profile',
+                            style: TextStyle(
+                              fontFamily: 'Roboto',
+                              color: Colors.black,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 40.0),
+                    child: GestureDetector(
+                      onTap: () {
                         Navigator.of(context).pop();
                         Navigator.push(
                           context,
@@ -281,36 +314,6 @@ class _HomeState extends State<Home> {
                   ),
                   SizedBox(
                     height: 20.0,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 40.0),
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          currentIndex = 3;
-                        });
-                        Navigator.of(context).pop();
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ProfileTwo()));
-                      },
-                      child: Row(
-                        children: [
-                          SvgPicture.asset('assets/images/rate_us.svg'),
-                          SizedBox(width: 8.0),
-                          Text(
-                            'Profile',
-                            style: TextStyle(
-                              fontFamily: 'Roboto',
-                              color: Colors.black,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   ),
                   Expanded(
                     child: Align(
